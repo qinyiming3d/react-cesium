@@ -1,7 +1,7 @@
 import { Viewer, Ion, ScreenSpaceEventHandler, Cartographic, ScreenSpaceEventType, Math as cesiumMath, ImageryLayer, WebMapTileServiceImageryProvider, createWorldTerrainAsync } from 'cesium';
 import { useEffect, useState } from "react";
 
-import TopBar from './components/TopBar';
+import TopBar from './components/TopBar/TopBar';
 import { VolumePrimitive } from './volumePrimitive';
 import { createVolumeTexture } from './glUtils';
 import { Upload, Button, message, ConfigProvider, theme } from 'antd';
