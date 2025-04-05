@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message TemperatureData {
+  bytes buffer = 1;
+  message Metadata {
+    map<string, int32> dimensions = 1;
+    string dataType = 2;
+    int32 length = 3;
+  }
+  Metadata metadata = 2;
+}
