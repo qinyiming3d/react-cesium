@@ -5,4 +5,16 @@ import cesium from 'vite-plugin-cesium';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), cesium()],
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        // rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
 })
