@@ -1,5 +1,7 @@
 import { Viewer, Ion, ScreenSpaceEventHandler, Cartographic, ScreenSpaceEventType, Math as cesiumMath, ImageryLayer, WebMapTileServiceImageryProvider, createWorldTerrainAsync } from 'cesium';
 import { useEffect, useState } from "react";
+import { useRoutes } from 'react-router-dom';
+import routes from './routes';
 
 import TopBar from './components/TopBar/TopBar';
 import { VolumePrimitive } from './volumePrimitive';
@@ -24,12 +26,12 @@ const App = () => {
 
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 951);
+      setIsMobile(window.innerWidth < 1010);
     };
-    
+
     checkIfMobile();
     window.addEventListener('resize', checkIfMobile);
-    
+
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
@@ -100,7 +102,7 @@ const App = () => {
     viewer.scene.debugShowFramesPerSecond = true;
     viewer.scene.globe.depthTestAgainstTerrain = true;
 
-    
+
 
     setViewer(viewer);
 
@@ -137,7 +139,7 @@ const App = () => {
     algorithm: isDarkTheme ? theme.darkAlgorithm : theme.defaultAlgorithm,
     token: {
       colorBgBase: isDarkTheme ? 'rgba(31,31,31, 0.5)' : 'rgba(224,224,224, 0.5)',
-      colorTextBase: isDarkTheme ? 'rgba(224,224,224, 0.5)' : 'rgba(31,31,31, 0.5)',
+      colorTextBase: isDarkTheme ? 'rgba(224,224,224)' : 'rgba(31,31,31)',
     },
   };
 
@@ -153,7 +155,10 @@ const App = () => {
           isMobile={isMobile}
         />
         <div id="cesiumContainer" />
-        {/* <div className="control-panel">
+        {/* {useRoutes(routes)} */}
+      </div>
+
+      {/* <div className="control-panel">
         <button onClick={() => showVectorField()}>显示矢量场</button>
         <Upload
           // beforeUpload={handleUpload}
@@ -163,7 +168,6 @@ const App = () => {
           <Button icon={<UploadOutlined />}>标量nc数据上传</Button>
         </Upload>
       </div> */}
-      </div>
     </ConfigProvider>
   );
 }

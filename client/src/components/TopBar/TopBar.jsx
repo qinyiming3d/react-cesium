@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Dropdown, Button, Typography, Switch, theme, Drawer } from 'antd';
-const { useToken } = theme;
+import { Layout, Dropdown, Button, Typography, Switch, theme, Drawer, Space } from 'antd';
+import { Link } from 'react-router-dom';
 import { DownOutlined, UpOutlined, TranslationOutlined, MenuOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import './TopBar.css';
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
+const { useToken } = theme;
 
 const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage, isMobile }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [scalarDropdownOpen, setScalarDropdownOpen] = useState(false);
   const [vectorDropdownOpen, setVectorDropdownOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
   const { token } = useToken();
   const { t, i18n } = useTranslation();
 
@@ -20,14 +22,14 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
   }, [currentLanguage, i18n]);
 
   const scalarItems = [
-    { key: '1', label: t('temperature') },
-    { key: '2', label: t('salinity') },
-    { key: '3', label: t('density') },
+    { key: 'temperature', label: <Link to="/scalar/temperature">{t('temperature')}</Link> },
+    { key: 'salinity', label: <Link to="/scalar/salinity">{t('salinity')}</Link> },
+    { key: 'density', label: <Link to="/scalar/density">{t('density')}</Link> },
   ];
 
   const vectorItems = [
-    { key: '1', label: t('velocity') },
-    { key: '2', label: t('direction') },
+    { key: 'velocity', label: <Link to="/vector/velocity">{t('velocity')}</Link> },
+    { key: 'direction', label: <Link to="/vector/direction">{t('direction')}</Link> },
   ];
 
 
@@ -51,8 +53,14 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
               className={'drawer-container'}
             >
               <div className="mobile-menu">
-                <Dropdown 
-                  menu={{ items: scalarItems }} 
+                <Dropdown
+                  menu={{ 
+                    items: scalarItems,
+                    selectedKeys: selectedItem?.type === 'scalar' ? [selectedItem.key] : [],
+                    onClick: (e) => {
+                      setSelectedItem({ type: 'scalar', key: e.key });
+                    }
+                  }}
                   trigger={['click']}
                   onOpenChange={(open) => setScalarDropdownOpen(open)}
                 >
@@ -61,8 +69,14 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
                   </Button>
                 </Dropdown>
 
-                <Dropdown 
-                  menu={{ items: vectorItems }} 
+                <Dropdown
+                  menu={{ 
+                    items: vectorItems,
+                    selectedKeys: selectedItem?.type === 'vector' ? [selectedItem.key] : [],
+                    onClick: (e) => {
+                      setSelectedItem({ type: 'vector', key: e.key });
+                    }
+                  }}
                   trigger={['click']}
                   onOpenChange={(open) => setVectorDropdownOpen(open)}
                 >
@@ -96,24 +110,42 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
         ) : (
           <>
             <div className="nav-items">
-              <Dropdown 
-                menu={{ items: scalarItems }} 
+              <Dropdown
+                menu={{
+                  items: scalarItems,
+                  selectable: true,
+                  selectedKeys: selectedItem?.type === 'scalar' ? [selectedItem.key] : [],
+                  onClick: (e) => {
+                    setSelectedItem({ type: 'scalar', key: e.key });
+                  }
+                }}
                 trigger={['click']}
                 onOpenChange={(open) => setScalarDropdownOpen(open)}
               >
-                <Button type="text" className="nav-button">
-                  {t('scalar')} {scalarDropdownOpen ? <UpOutlined /> : <DownOutlined />}
-                </Button>
+                <div>
+                  {t('scalar')}
+                  <span className='icon'>{scalarDropdownOpen ? <UpOutlined /> : <DownOutlined />}</span>
+                </div>
+
               </Dropdown>
 
-              <Dropdown 
-                menu={{ items: vectorItems }} 
+              <Dropdown
+                menu={{
+                  items: vectorItems,
+                  selectable: true,
+                  selectedKeys: selectedItem?.type === 'vector' ? [selectedItem.key] : [],
+                  onClick: (e) => {
+                    setSelectedItem({ type: 'vector', key: e.key });
+                  }
+                }}
                 trigger={['click']}
                 onOpenChange={(open) => setVectorDropdownOpen(open)}
               >
-                <Button type="text" className="nav-button">
-                  {t('vector')} {vectorDropdownOpen ? <UpOutlined /> : <DownOutlined />}
-                </Button>
+                <div>
+                  {t('vector')}
+                  <span className='icon'>{vectorDropdownOpen ? <UpOutlined /> : <DownOutlined />}</span>
+                </div>
+
               </Dropdown>
             </div>
           </>

@@ -76,8 +76,12 @@
   flex-direction: row-reverse;
 }
 
+.icon {
+  margin-left: 10px;
+}
+
 /* Mobile styles */
-@media (max-width: 951px) {
+@media (max-width: 1010px) {
   .top-bar-content {
     justify-content: space-between;
   }
