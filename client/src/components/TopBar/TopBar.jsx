@@ -3,7 +3,7 @@ import { Layout, Dropdown, Button, Typography, Switch, theme, Drawer, Space } fr
 import { Link } from 'react-router-dom';
 import { DownOutlined, UpOutlined, TranslationOutlined, MenuOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import './TopBar.css';
+import styles from './index.module.scss';
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
@@ -34,14 +34,14 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
 
 
   return (
-    <Header className="top-bar" style={{ background: token.colorBgBase, color: token.colorTextBase }}>
-      <div className="top-bar-content">
+    <Header className={styles.topBar} style={{ background: token.colorBgBase, color: token.colorTextBase }}>
+      <div className={styles.topBarContent}>
         {isMobile ? (
           <>
             <Button
               type="text"
               icon={<MenuOutlined />}
-              className="hamburger-menu"
+              className={styles.hamburgerMenu}
               onClick={() => setDrawerVisible(true)}
             />
 
@@ -50,9 +50,8 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
               onClose={() => setDrawerVisible(false)}
               open={drawerVisible}
               width={220}
-              className={'drawer-container'}
             >
-              <div className="mobile-menu">
+              <div className={styles.mobileMenu}>
                 <Dropdown
                   menu={{ 
                     items: scalarItems,
@@ -64,7 +63,7 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
                   trigger={['click']}
                   onOpenChange={(open) => setScalarDropdownOpen(open)}
                 >
-                  <Button type="text" className="nav-button">
+                <Button type="text" className={styles.navButton}>
                     {t('scalar')} {scalarDropdownOpen ? <UpOutlined /> : <DownOutlined />}
                   </Button>
                 </Dropdown>
@@ -80,13 +79,13 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
                   trigger={['click']}
                   onOpenChange={(open) => setVectorDropdownOpen(open)}
                 >
-                  <Button type="text" className="nav-button">
+                <Button type="text" className={styles.navButton}>
                     {t('vector')} {vectorDropdownOpen ? <UpOutlined /> : <DownOutlined />}
                   </Button>
                 </Dropdown>
 
-                <div className="mobile-controls">
-                  <Text className="author-info">
+                <div className={styles.mobileControls}>
+                  <Text className={styles.authorInfo}>
                     {t('author')}
                   </Text>
 
@@ -109,7 +108,7 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
           </>
         ) : (
           <>
-            <div className="nav-items">
+            <div className={styles.navItems}>
               <Dropdown
                 menu={{
                   items: scalarItems,
@@ -124,7 +123,7 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
               >
                 <div>
                   {t('scalar')}
-                  <span className='icon'>{scalarDropdownOpen ? <UpOutlined /> : <DownOutlined />}</span>
+                  <span className={styles.icon}>{scalarDropdownOpen ? <UpOutlined /> : <DownOutlined />}</span>
                 </div>
 
               </Dropdown>
@@ -143,7 +142,7 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
               >
                 <div>
                   {t('vector')}
-                  <span className='icon'>{vectorDropdownOpen ? <UpOutlined /> : <DownOutlined />}</span>
+                  <span className={styles.icon}>{vectorDropdownOpen ? <UpOutlined /> : <DownOutlined />}</span>
                 </div>
 
               </Dropdown>
@@ -151,13 +150,13 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
           </>
         )}
 
-        <Title level={3} className="title">
+        <Title level={3} className={styles.title}>
           {t('title')}
         </Title>
 
         {!isMobile && (
-          <div className="right-controls">
-            <Text className="author-info">
+            <div className={styles.rightControls}>
+              <Text className={styles.authorInfo}>
               {t('author')}
             </Text>
 

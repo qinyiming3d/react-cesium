@@ -1,0 +1,37 @@
+.visualizationContainer {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+
+  .cesiumContainer {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    position: relative;
+  }
+}
+
+:global(.cesium-performanceDisplay) {
+  margin-top: 80px;
+}
+
+:global(.cesium-viewer-toolbar) {
+  top: 85px;
+}
+
+.controlPanel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+  background: rgba(24, 144, 255, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+
+  button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    transition: all 0.3s ease;
+  }
+}

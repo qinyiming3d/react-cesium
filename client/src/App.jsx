@@ -8,7 +8,7 @@ import { VolumePrimitive } from './volumePrimitive';
 import { createVolumeTexture } from './glUtils';
 import { Upload, Button, message, ConfigProvider, theme } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import "./App.css";
+import styles from './App.module.scss';
 
 const App = () => {
   const [viewerState, setViewer] = useState(null);
@@ -145,16 +145,15 @@ const App = () => {
 
   return (
     <ConfigProvider theme={currentTheme}>
-      <div className="visualization-container">
+      <div className={styles.visualizationContainer}>
         <TopBar
-          className="top-bar"
           isDarkTheme={isDarkTheme}
           onThemeChange={handleThemeChange}
           currentLanguage={currentLanguage}
           onChangeLanguage={changeLanguage}
           isMobile={isMobile}
         />
-        <div id="cesiumContainer" />
+        <div id="cesiumContainer" className={styles.cesiumContainer} />
         {/* {useRoutes(routes)} */}
       </div>
 
