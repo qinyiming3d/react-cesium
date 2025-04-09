@@ -7,8 +7,7 @@ module.exports = async (req, res) => {
     if (!fs.existsSync(saveDir)) {
       fs.mkdirSync(saveDir, { recursive: true });
     }
-
-    const fileName = `${Date.now()}_${req.file.originalname}`;
+    const fileName = `${Date.now()}_${req.file.fileName}`;
     const filePath = path.join(saveDir, fileName);
 
     fs.renameSync(req.file.path, filePath);
