@@ -1,5 +1,5 @@
 import ScalarPage from './pages/ScalarPage';
-import TemperaturePage from './pages/TemperaturePage';
+import TemperaturePage from './pages/TemperaturePage/TemperaturePage';
 import SalinityPage from './pages/SalinityPage';
 import DensityPage from './pages/DensityPage';
 import VectorPage from './pages/VectorPage';
