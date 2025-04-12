@@ -1,0 +1,7 @@
+.nowrap {
+    :global(.ant-table-cell) {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}

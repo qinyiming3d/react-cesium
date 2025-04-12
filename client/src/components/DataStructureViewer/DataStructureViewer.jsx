@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Layout, Menu, Table } from 'antd';
 import { DatabaseOutlined } from '@ant-design/icons';
 import { Popover } from 'antd';
-
-const {  Content } = Layout;
+import styles from './index.module.scss'
 
 const DataStructureViewer = ({ data }) => {
   const [selectedKey, setSelectedKey] = useState('dimensions');
@@ -62,7 +61,7 @@ const DataStructureViewer = ({ data }) => {
   };
 
   return (
-    <Layout style={{ background: 'transparent' }}>
+    <div style={{ background: 'transparent' }}>
       <div style={{ marginBottom: 16 }}>
         <Menu
           mode="horizontal"
@@ -71,21 +70,21 @@ const DataStructureViewer = ({ data }) => {
           onSelect={({ key }) => setSelectedKey(key)}
         />
       </div>
-      <Content style={{ padding: '0 24px' }}>
-        {menuItems.map(item => (
-          selectedKey === item.key && (
-            <Table
-              key={item.key}
-              columns={generateColumns(item.key)}
-              dataSource={data[item.key]}
-              rowKey="name"
-              pagination={false}
-              bordered
-            />
-          )
-        ))}
-      </Content>
-    </Layout>
+      {menuItems.map(item => (
+        selectedKey === item.key && (
+          <Table
+            key={item.key}
+            columns={generateColumns(item.key)}
+            dataSource={data[item.key]}
+            rowKey="name"
+            pagination={false}
+            scroll={{ x: true, y: 'calc(100vh - 360px)' }}
+            className={styles.nowrap}
+            bordered
+          />
+        )
+      ))}
+    </div>
   );
 };
 

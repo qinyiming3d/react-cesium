@@ -183,9 +183,11 @@ const NcFilePage = ({ viewer }) => {
     <div className={styles.container}>
       {/* 左侧容器 */}
       <div className={styles.leftContainer}>
+        {/* 数据上传 */}
         <Card title={t('temperaturePage.upload.title')} className={styles.card}>
           {
             <>
+              {/* 上传按钮 */}
               <Upload
                 beforeUpload={beforeUpload}
                 showUploadList={false}
@@ -194,15 +196,19 @@ const NcFilePage = ({ viewer }) => {
               >
                 <Button>{t('temperaturePage.upload.selectFile')}</Button>
               </Upload>
-              {file && (<p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file.name}
-                <Button
-                  type="primary"
-                  onClick={handleUpload}
-                  loading={uploading}
-                  className={styles.uploadButton}
-                >
-                  {t('temperaturePage.upload.uploadButton')}
-                </Button></p>)}
+              {file && (
+                // 文件名
+                <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file.name}
+                  {/* 上传文件 */}
+                  <Button
+                    type="primary"
+                    onClick={handleUpload}
+                    loading={uploading}
+                    className={styles.uploadButton}
+                  >
+                    {t('temperaturePage.upload.uploadButton')}
+                  </Button></p>)}
+              {/* 进度条 */}
               {uploading && (
                 <Progress
                   percent={uploadProgress}
@@ -213,7 +219,7 @@ const NcFilePage = ({ viewer }) => {
           }
         </Card>
 
-
+        {/* 数据查询 */}
         <Card title={t('temperaturePage.query.title')} className={styles.card}>
           {variables.length === 0 ? (
             <EmptyState description="请先上传数据文件" />
@@ -257,21 +263,11 @@ const NcFilePage = ({ viewer }) => {
             </Form>)}
 
         </Card>
-
-        <Modal
-          open={isStructureModalOpen}
-          onCancel={() => setIsStructureModalOpen(false)}
-          footer={null}
-          width="80%"
-        >
-          <DataStructureViewer
-            data={header}
-          />
-        </Modal>
       </div>
 
       {/* 右侧卡片组 */}
       <div className={styles.rightContainer}>
+        {/* 数据操作 */}
         <Card title={t('temperaturePage.actions.title')} className={styles.card}>
           {!data.length > 0 ? <EmptyState description="请先上传数据文件" /> : <><Button onClick={clearHeatmap}>{t('temperaturePage.actions.clearHeatmap')}</Button>
             <Button
@@ -282,7 +278,7 @@ const NcFilePage = ({ viewer }) => {
             </Button></>}
         </Card>
 
-
+        {/* 渲染效率 */}
         <Card title={t('temperaturePage.rendering.title')} className={styles.card}>
           {data.length > 0 ? <><div>{t('temperaturePage.rendering.dataPoints')}: {data.length}</div>
             <div>{t('temperaturePage.rendering.sampleRate')}: {Math.max(1, Math.floor(data.length / 10000))}</div>
@@ -290,6 +286,21 @@ const NcFilePage = ({ viewer }) => {
 
         </Card>
       </div>
+
+
+      {/* 表格模态框 */}
+      <Modal
+        open={isStructureModalOpen}
+        onCancel={() => setIsStructureModalOpen(false)}
+        footer={null}
+        width="80%"
+        wrapClassName={styles.modalWrap}
+
+      >
+        <DataStructureViewer
+          data={header}
+        />
+      </Modal>
     </div>
 
   );
