@@ -70,18 +70,21 @@ const NcFilePage = ({ viewer }) => {
     if (!viewer || !points.length) return;
 
     clearHeatmap();
-    console.log('开始渲染热力图，数据点数:', points.length);
+    console.log('后端传过来的数据点数:', points.length);
 
     try {
       const newDataSource = new CustomDataSource('temperatureHeatmap');
-      console.log(points.length); // 16w个点
       const sampleRate = Math.max(1, Math.floor(points.length / 10000)); // 采样率
-      const sampledPoints = points.filter((_, index) => index % sampleRate === 0);
+      let sampledPoints = points.filter((_, index) => index % sampleRate === 0);
 
       console.log('采样后数据点数:', sampledPoints.length);
 
+      sampledPoints = sampledPoints.filter(item => item[2]); // 过滤掉无效数据
+      console.log('去除无效数据后的数据点数:', sampledPoints.length);
+      
       // 找到温度范围用于颜色映射
       const temps = sampledPoints.map(item => item[2]);
+
       const minTemp = Math.min(...temps);
       const maxTemp = Math.max(...temps);
       console.log('温度范围:', minTemp, maxTemp);
@@ -205,19 +208,27 @@ const NcFilePage = ({ viewer }) => {
                   />
                 )}
               </div>
-              {file && (
-                // 文件名
-                <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file.name}
-                  {/* 上传文件 */}
-                  <Button
-                    type="primary"
-                    onClick={handleUpload}
-                    loading={uploading}
-                    className={styles.uploadButton}
-                  >
-                    {t('temperaturePage.upload.uploadButton')}
-                  </Button></p>)}
 
+              {/* // 文件名 */}
+              <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file?.name}</p>
+              {/* 上传文件 */}
+              <Button
+                type="primary"
+                onClick={handleUpload}
+                loading={uploading}
+                className={styles.uploadButton}
+                disabled={!file}
+              >
+                {t('temperaturePage.upload.uploadButton')}
+              </Button>
+
+              <Button
+                onClick={() => setIsStructureModalOpen(true)}
+                className={styles.actionButton}
+                disabled={!file}
+              >
+                {t('temperaturePage.actions.viewStructure')}
+              </Button>
             </>
           }
         </Card>
@@ -263,6 +274,8 @@ const NcFilePage = ({ viewer }) => {
               <Button type="primary" htmlType="submit" loading={queryLoading} className={styles.queryButton}>
                 {t('temperaturePage.query.submitButton')}
               </Button>
+
+              <Button onClick={clearHeatmap} className={styles.actionButton}>{t('temperaturePage.actions.clearHeatmap')}</Button>
             </Form>)}
 
         </Card>
@@ -271,15 +284,10 @@ const NcFilePage = ({ viewer }) => {
       {/* 右侧卡片组 */}
       <div className={styles.rightContainer}>
         {/* 数据操作 */}
-        <Card title={t('temperaturePage.actions.title')} className={styles.card}>
-          {!data.length > 0 ? <EmptyState description="请先上传数据文件" /> : <><Button onClick={clearHeatmap}>{t('temperaturePage.actions.clearHeatmap')}</Button>
-            <Button
-              onClick={() => setIsStructureModalOpen(true)}
-              className={styles.actionButton}
-            >
-              {t('temperaturePage.actions.viewStructure')}
-            </Button></>}
-        </Card>
+        {/* <Card title={t('temperaturePage.actions.title')} className={styles.card}>
+          {!data.length > 0 ? <EmptyState description="请先上传数据文件" /> : <>
+          </>}
+        </Card> */}
 
         {/* 渲染效率 */}
         <Card title={t('temperaturePage.rendering.title')} className={styles.card}>
