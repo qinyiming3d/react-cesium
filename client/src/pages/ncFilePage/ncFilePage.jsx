@@ -196,6 +196,15 @@ const NcFilePage = ({ viewer }) => {
               >
                 <Button>{t('temperaturePage.upload.selectFile')}</Button>
               </Upload>
+              {/* 进度条 */}
+              <div className={styles.uploadContainer}>
+                {uploading && (
+                  <Progress
+                    percent={uploadProgress}
+                    status="active"
+                  />
+                )}
+              </div>
               {file && (
                 // 文件名
                 <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file.name}
@@ -208,13 +217,7 @@ const NcFilePage = ({ viewer }) => {
                   >
                     {t('temperaturePage.upload.uploadButton')}
                   </Button></p>)}
-              {/* 进度条 */}
-              {uploading && (
-                <Progress
-                  percent={uploadProgress}
-                  status="active"
-                />
-              )}
+
             </>
           }
         </Card>
