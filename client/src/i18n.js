@@ -23,10 +23,10 @@ const resources = {
         },
         query: {
           title: 'Data Query',
-          longitude: 'Longitude',
-          latitude: 'Latitude',
-          height: 'Height',
-          temperature: 'Temperature',
+          x: 'Longitude (x-coordinate)',
+          y: 'Latitude (y-coordinate)',
+          z: 'Z Variable (Time/Height)',
+          f: 'f(Longitude, Latitude, Z)',
           selectPlaceholder: 'Please select',
           submitButton: 'Query and Render'
         },
@@ -65,10 +65,10 @@ const resources = {
         },
         query: {
           title: '数据查询',
-          longitude: '经度',
-          latitude: '纬度',
-          height: '高度',
-          temperature: '温度',
+          x: 'x位置(经度)',
+          y: 'y位置(纬度)',
+          z: 'z变量(时间/高度)',
+          f: 'f(x,y,z)',
           selectPlaceholder: '请选择',
           submitButton: '查询并渲染'
         },

@@ -26,7 +26,7 @@ const NcFilePage = ({ viewer }) => {
   const [form] = Form.useForm();
   const [header, setHeader] = useState({});
 
-  const [dataSource, setDataSource] = useState(null);
+  const [dataSource, setDataSource] = useState(null); // entity实例
   const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
 
   const [socket, setSocket] = useState(null);
@@ -81,7 +81,7 @@ const NcFilePage = ({ viewer }) => {
 
       sampledPoints = sampledPoints.filter(item => item[2]); // 过滤掉无效数据
       console.log('去除无效数据后的数据点数:', sampledPoints.length);
-      
+
       // 找到温度范围用于颜色映射
       const temps = sampledPoints.map(item => item[2]);
 
@@ -138,6 +138,7 @@ const NcFilePage = ({ viewer }) => {
       setVariables(res.data.header.variables || []);
       setFilePath(res.data.filePath);
       setHeader(res.data.header);
+      form?.resetFields();
     } catch (error) {
       message.error('上传失败');
       console.error('上传错误:', error);
@@ -152,8 +153,8 @@ const NcFilePage = ({ viewer }) => {
       const params = {
         lon: values.lon,
         lat: values.lat,
-        height: values.height,
-        temperature: values.temperature
+        z: values.z,
+        f: values.f
       };
 
       const res = await scalarController.getTempdata(filePath, JSON.stringify(params));
@@ -239,7 +240,7 @@ const NcFilePage = ({ viewer }) => {
             <EmptyState description="请先上传数据文件" />
           ) : (
             <Form form={form} onFinish={handleQuery}>
-              <Form.Item name="lon" label={t('temperaturePage.query.longitude')} rules={[{ required: true }]}>
+              <Form.Item name="lon" label={t('temperaturePage.query.x')} rules={[{ required: true }]}>
                 <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
                   {variables.map(v => (
                     <Option key={v.name} value={v.name}>{v.name}</Option>
@@ -247,7 +248,7 @@ const NcFilePage = ({ viewer }) => {
                 </Select>
               </Form.Item>
 
-              <Form.Item name="lat" label={t('temperaturePage.query.latitude')} rules={[{ required: true }]}>
+              <Form.Item name="lat" label={t('temperaturePage.query.y')} rules={[{ required: true }]}>
                 <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
                   {variables.map(v => (
                     <Option key={v.name} value={v.name}>{v.name}</Option>
@@ -255,7 +256,7 @@ const NcFilePage = ({ viewer }) => {
                 </Select>
               </Form.Item>
 
-              <Form.Item name="height" label={t('temperaturePage.query.height')} rules={[{ required: true }]}>
+              <Form.Item name="z" label={t('temperaturePage.query.z')}>
                 <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
                   {variables.map(v => (
                     <Option key={v.name} value={v.name}>{v.name}</Option>
@@ -263,7 +264,7 @@ const NcFilePage = ({ viewer }) => {
                 </Select>
               </Form.Item>
 
-              <Form.Item name="temperature" label={t('temperaturePage.query.temperature')} rules={[{ required: true }]}>
+              <Form.Item name="f" label={t('temperaturePage.query.f')} rules={[{ required: true }]}>
                 <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
                   {variables.map(v => (
                     <Option key={v.name} value={v.name}>{v.name}</Option>
