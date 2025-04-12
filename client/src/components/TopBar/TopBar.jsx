@@ -22,7 +22,7 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
   }, [currentLanguage, i18n]);
 
   const scalarItems = [
-    { key: 'temperature', label: <Link to="/scalar/temperature">{t('temperature')}</Link> },
+    { key: 'nc', label: <Link to="/scalar/ncFile">{t('ncFile')}</Link> },
     { key: 'salinity', label: <Link to="/scalar/salinity">{t('salinity')}</Link> },
     { key: 'density', label: <Link to="/scalar/density">{t('density')}</Link> },
   ];

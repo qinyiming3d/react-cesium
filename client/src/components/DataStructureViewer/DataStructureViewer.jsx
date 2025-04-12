@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Table, Typography, Card } from 'antd';
-import { DatabaseOutlined, FileTextOutlined, BarsOutlined } from '@ant-design/icons';
+import { Layout, Menu, Table } from 'antd';
+import { DatabaseOutlined } from '@ant-design/icons';
 import { Popover } from 'antd';
 
-const { Sider, Content } = Layout;
-const { Title } = Typography;
+const {  Content } = Layout;
 
 const DataStructureViewer = ({ data }) => {
   const [selectedKey, setSelectedKey] = useState('dimensions');

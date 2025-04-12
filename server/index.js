@@ -3,11 +3,20 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const temperatureHandler = require('./scalar/temperatureHandler');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+const ncFileHandler = require('./scalar/ncFileHandler');
 const vectorHandler = require('./vector/vectorHandler');
 const util = require('./scalar/util');
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 // 配置上传临时目录
 const uploadDir = path.join(__dirname, 'saved_files');
@@ -46,7 +55,7 @@ app.get('/', (req, res) => {
 });
 
 // 标量场数据路由
-app.post('/api/temperatureData', upload.single('file'), temperatureHandler);
+app.post('/api/ncFileHandler', upload.single('file'), ncFileHandler);
 
 // 获取温度数据路由
 app.get('/api/getTemperatureData', async (req, res) => {
@@ -92,6 +101,9 @@ app.post('/api/vectorData', upload.single('file'), vectorHandler);
 
 // 启动服务器
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`服务器运行在端口 ${PORT}`);
 });
+
+// 将socket.io实例附加到app对象
+app.set('socketio', io);

@@ -1,6 +1,6 @@
 import Request from '../tools/request';
 
-const BASE_URL = '';
+export const BASE_URL = 'http://localhost:3001';
 
 export const request = new Request({
     baseURL: BASE_URL,
