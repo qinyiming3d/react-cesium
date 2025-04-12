@@ -9,7 +9,7 @@ import { createVolumeTexture } from './glUtils';
 import { Upload, Button, message, ConfigProvider, theme } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import styles from './App.module.scss';
-import TemperaturePage from './pages/TemperaturePage/TemperaturePage';
+import NcFilePage from './pages/ncFilePage/ncFilePage';
 
 const App = () => {
   const [viewerState, setViewer] = useState(null);
@@ -156,7 +156,7 @@ const App = () => {
         />
         <div id="cesiumContainer" className={styles.cesiumContainer} />
         {/* {useRoutes(routes)} */}
-        <TemperaturePage viewer={viewerState}/>
+        <NcFilePage viewer={viewerState}/>
       </div>
 
       {/* <div className="control-panel">

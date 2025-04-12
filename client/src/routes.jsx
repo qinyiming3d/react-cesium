@@ -1,5 +1,5 @@
 import ScalarPage from './pages/ScalarPage';
-import TemperaturePage from './pages/TemperaturePage/TemperaturePage';
+import NcFilePage from './pages/ncFilePage/ncFilePage';
 import SalinityPage from './pages/SalinityPage';
 import DensityPage from './pages/DensityPage';
 import VectorPage from './pages/VectorPage';
@@ -10,7 +10,7 @@ const routes = [
   {
     path: '/scalar',
     children: [
-      { path: 'temperature', element: <TemperaturePage /> },
+      { path: 'ncFile', element: <NcFilePage /> },
       { path: 'salinity', element: <SalinityPage /> },
       { path: 'density', element: <DensityPage /> },
       { path: '', element: <ScalarPage /> }
