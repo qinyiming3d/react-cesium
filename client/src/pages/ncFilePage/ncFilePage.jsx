@@ -1,321 +1,295 @@
-import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
-import { Typography, Button, message, Upload, Card, theme, Modal, Form, Select, Progress } from 'antd';
+import React, {useState, useEffect} from 'react';
+import {io} from 'socket.io-client';
+import {Button, message, Upload, Card, theme, Modal, Form, Select, Progress} from 'antd';
 import EmptyState from '@components/EmptyState/EmptyState';
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
 import DataStructureViewer from '@components/DataStructureViewer/DataStructureViewer';
-import { vectorController, scalarController } from '@_public/apis/index.js';
-import { Color, Cartesian3, CustomDataSource, Entity, HeightReference } from 'cesium';
-import { BASE_URL } from '@_public/apis/request.js';
+import {vectorController, scalarController} from '@_public/apis/index.js';
+import {BASE_URL} from '@_public/apis/request.js';
+import pointRender from './renderMode/pointRender.js';
+import cylinderRender from './renderMode/cylinderRender.js';
+import lineRender from './renderMode/lineRender.js';
+import shaderRender from "./renderMode/shaderRender.js";
+import getPrimitiveEllipsoid from './test'
 import styles from './index.module.scss';
 
-const { Title } = Typography;
-const { useToken } = theme;
-const { Option } = Select;
+const {useToken} = theme;
+const {Option} = Select;
 
-const NcFilePage = ({ viewer }) => {
-  const { t } = useTranslation();
-  const { token } = useToken();
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [queryLoading, setQueryLoading] = useState(false);
-  const [data, setData] = useState([]);
-  const [variables, setVariables] = useState([]);
-  const [filePath, setFilePath] = useState('');
-  const [form] = Form.useForm();
-  const [header, setHeader] = useState({});
-
-  const [dataSource, setDataSource] = useState(null); // entity实例
-  const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
-
-  const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    const newSocket = io(BASE_URL, {
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+const NcFilePage = ({viewer}) => {
+    const {t} = useTranslation();
+    const {token} = useToken();
+    const [file, setFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [confirmLoading, seConfirmLoading] = useState(false);
+    const [variables, setVariables] = useState([]); // 用于生成下拉框选项
+    const [filePath, setFilePath] = useState('');  // 用于后续查询
+    const [form] = Form.useForm();
+    const [header, setHeader] = useState({}); // 用于渲染头文件表格
+    const [messageApi, contextHolder] = message.useMessage({
+        top: '10vh',
     });
+    const [renderInfo, setRenderInfo] = useState({});
 
-    newSocket.on('connect', () => {
-      console.log('Socket connected:', newSocket.id);
-    });
-
-    newSocket.on('upload-progress', (data) => {
-      setUploadProgress(data.progress);
-    });
-
-    newSocket.on('connect_error', (err) => {
-      console.error('Socket连接错误:', err);
-    });
-
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.disconnect();
+    const renderMethods = {
+        point: pointRender, // 点渲染
+        column: cylinderRender, // 柱渲染
+        contour: lineRender, // 等值线渲染
+        shader: shaderRender, // 着色渲染
     };
-  }, []);
 
-  // 清除热力图
-  const clearHeatmap = () => {
-    if (viewer && dataSource) {
-      viewer.dataSources.remove(dataSource);
-      setDataSource(null);
-    }
-  };
+    const [dataSource, setDataSource] = useState(null); // entity实例
+    const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
 
-  // 渲染热力图 (优化版)
-  const renderHeatmap = (points) => {
-    if (!viewer || !points.length) return;
+    const [socket, setSocket] = useState(null);
 
-    clearHeatmap();
-    console.log('后端传过来的数据点数:', points.length);
-
-    try {
-      const newDataSource = new CustomDataSource('temperatureHeatmap');
-      const sampleRate = Math.max(1, Math.floor(points.length / 10000)); // 采样率
-      let sampledPoints = points.filter((_, index) => index % sampleRate === 0);
-
-      console.log('采样后数据点数:', sampledPoints.length);
-
-      sampledPoints = sampledPoints.filter(item => item[2]); // 过滤掉无效数据
-      console.log('去除无效数据后的数据点数:', sampledPoints.length);
-
-      // 找到温度范围用于颜色映射
-      const temps = sampledPoints.map(item => item[2]);
-
-      const minTemp = Math.min(...temps);
-      const maxTemp = Math.max(...temps);
-      console.log('温度范围:', minTemp, maxTemp);
-
-      // 分批处理数据
-      const batchSize = 5000;
-      for (let i = 0; i < sampledPoints.length; i += batchSize) {
-        const batch = sampledPoints.slice(i, i + batchSize);
-        batch.forEach(([longitude, latitude, temp]) => {
-          // 计算颜色 (从蓝色到红色)
-          const ratio = (temp - minTemp) / (maxTemp - minTemp);
-          const color = Color.fromHsl(
-            0, // 固定为红色色相
-            ratio, // 饱和度从0到1
-            1 - ratio * 0.5 // 亮度从1到0.5
-          );
-
-          const position = Cartesian3.fromDegrees(longitude, latitude);
-
-          newDataSource.entities.add(new Entity({
-            position,
-            point: {
-              color,
-              pixelSize: 10,
-              heightReference: HeightReference.CLAMP_TO_GROUND
-            }
-          }));
+    useEffect(() => {
+        const newSocket = io(BASE_URL, {
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
         });
-      }
 
-      viewer.dataSources.add(newDataSource);
-      setDataSource(newDataSource);
-      console.log('热力图渲染完成');
-    } catch (error) {
-      console.error('热力图渲染错误:', error);
-      message.error('热力图渲染失败');
-    }
-  };
+        newSocket.on('connect', () => {
+            console.log('Socket connected:', newSocket.id);
+        });
 
-  const handleUpload = async () => {
-    if (!file) {
-      message.warning('请先选择文件');
-      return;
-    }
+        newSocket.on('upload-progress', (data) => {
+            setUploadProgress(data.progress);
+        });
 
-    setUploading(true);
-    setUploadProgress(0);
-    try {
-      const res = await scalarController.getHeaderByNc(file, socket);
-      message.success('上传成功');
-      setVariables(res.data.header.variables || []);
-      setFilePath(res.data.filePath);
-      setHeader(res.data.header);
-      form?.resetFields();
-    } catch (error) {
-      message.error('上传失败');
-      console.error('上传错误:', error);
-    } finally {
-      setUploading(false);
-    }
-  };
+        newSocket.on('connect_error', (err) => {
+            console.error('Socket连接错误:', err);
+        });
 
-  const handleQuery = async (values) => {
-    try {
-      setQueryLoading(true);
-      const params = {
-        lon: values.lon,
-        lat: values.lat,
-        z: values.z,
-        f: values.f
-      };
+        setSocket(newSocket);
 
-      const res = await scalarController.getTempdata(filePath, JSON.stringify(params));
+        return () => {
+            newSocket.disconnect();
+            messageApi.destroy();
+            clearHeatmap();
+        };
+    }, []);
 
-      setData(res.data);
-      renderHeatmap(res.data);
-      message.success('数据查询成功');
-    } catch (error) {
-      message.error('数据查询失败');
-      console.error('查询错误:', error);
-    } finally {
-      setQueryLoading(false);
-    }
-  };
+    const handleUpload = async () => {
+        // getPrimitiveEllipsoid(viewer);
+        //
+        //
+        // viewer.scene.primitives.add(primitive);
+        if (!file) {
+            messageApi.warning('请先选择文件');
+            return;
+        }
 
-  const beforeUpload = (file) => {
-    setFile(file);
-    return false; // 阻止自动上传
-  };
-
-
-
-  useEffect(() => {
-    return () => {
-      clearHeatmap();
+        setUploading(true);
+        setUploadProgress(0);
+        try {
+            const res = await scalarController.getHeaderByNc(file, socket);
+            messageApi.success('上传成功');
+            setVariables(res.data.header.variables || []);
+            setFilePath(res.data.filePath);
+            setHeader(res.data.header);
+            form?.resetFields();
+        } catch (error) {
+            messageApi.error('上传失败');
+        } finally {
+            setUploading(false);
+        }
     };
-  }, []);
 
-  return (
-    <div className={styles.container}>
-      {/* 左侧容器 */}
-      <div className={styles.leftContainer}>
-        {/* 数据上传 */}
-        <Card title={t('temperaturePage.upload.title')} className={styles.card}>
-          {
-            <>
-              {/* 上传按钮 */}
-              <Upload
-                beforeUpload={beforeUpload}
-                showUploadList={false}
-                accept=".nc"
-                disabled={uploading}
-              >
-                <Button>{t('temperaturePage.upload.selectFile')}</Button>
-              </Upload>
-              {/* 进度条 */}
-              <div className={styles.uploadContainer}>
-                {uploading && (
-                  <Progress
-                    percent={uploadProgress}
-                    status="active"
-                  />
-                )}
-              </div>
+    const confirm = async (values) => {
+        if (!viewer) {
+            messageApi.warning('cesium矢量地图未加载，请检查网络是否正常');
+        }
+        try {
+            seConfirmLoading(true);
+            const params = {
+                lon: values.lon,
+                lat: values.lat,
+                z: values.z,
+                f: values.f
+            };
 
-              {/* // 文件名 */}
-              <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file?.name}</p>
-              {/* 上传文件 */}
-              <Button
-                type="primary"
-                onClick={handleUpload}
-                loading={uploading}
-                className={styles.uploadButton}
-                disabled={!file}
-              >
-                {t('temperaturePage.upload.uploadButton')}
-              </Button>
+            const res = await scalarController.getGridData(filePath, JSON.stringify(params));
 
-              <Button
-                onClick={() => setIsStructureModalOpen(true)}
-                className={styles.actionButton}
-                disabled={!file}
-              >
-                {t('temperaturePage.actions.viewStructure')}
-              </Button>
-            </>
-          }
-        </Card>
+            clearHeatmap();
 
-        {/* 数据查询 */}
-        <Card title={t('temperaturePage.query.title')} className={styles.card}>
-          {variables.length === 0 ? (
-            <EmptyState description="请先上传数据文件" />
-          ) : (
-            <Form form={form} onFinish={handleQuery}>
-              <Form.Item name="lon" label={t('temperaturePage.query.x')} rules={[{ required: true }]}>
-                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
-                  {variables.map(v => (
-                    <Option key={v.name} value={v.name}>{v.name}</Option>
-                  ))}
-                </Select>
-              </Form.Item>
+            const renderMode = form.getFieldValue('renderMode') || 'point';
 
-              <Form.Item name="lat" label={t('temperaturePage.query.y')} rules={[{ required: true }]}>
-                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
-                  {variables.map(v => (
-                    <Option key={v.name} value={v.name}>{v.name}</Option>
-                  ))}
-                </Select>
-              </Form.Item>
+            setRenderInfo({...res.data.header})
 
-              <Form.Item name="z" label={t('temperaturePage.query.z')}>
-                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
-                  {variables.map(v => (
-                    <Option key={v.name} value={v.name}>{v.name}</Option>
-                  ))}
-                </Select>
-              </Form.Item>
+            const newDataSource = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header.min, res.data.header.max);
+            setDataSource(newDataSource);
 
-              <Form.Item name="f" label={t('temperaturePage.query.f')} rules={[{ required: true }]}>
-                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
-                  {variables.map(v => (
-                    <Option key={v.name} value={v.name}>{v.name}</Option>
-                  ))}
-                </Select>
-              </Form.Item>
+            messageApi.success('渲染成功');
+        } catch (error) {
+            messageApi.error('结构选择不符合规范');
+        } finally {
+            seConfirmLoading(false);
+        }
+    };
 
-              <Button type="primary" htmlType="submit" loading={queryLoading} className={styles.queryButton}>
-                {t('temperaturePage.query.submitButton')}
-              </Button>
+    const beforeUpload = (file) => {
+        setFile(file);
+        return false; // 阻止自动上传
+    };
 
-              <Button onClick={clearHeatmap} className={styles.actionButton}>{t('temperaturePage.actions.clearHeatmap')}</Button>
-            </Form>)}
+    // 清除热力图
+    const clearHeatmap = () => {
+        if (viewer && dataSource) {
+            viewer.dataSources.remove(dataSource);
+            setDataSource(null);
+            setRenderInfo({});
+        }
+    };
 
-        </Card>
-      </div>
+    return (
+        <div className={styles.container}>
+            {contextHolder}
+            {/* 左侧容器 */}
+            <div className={styles.leftContainer}>
+                {/* 数据上传 */}
+                <Card title={t('temperaturePage.upload.title')} className={styles.card}>
+                    {
+                        <>
+                            {/* 上传按钮 */}
+                            <Upload
+                                beforeUpload={beforeUpload}
+                                showUploadList={false}
+                                accept=".nc"
+                                disabled={uploading}
+                            >
+                                <Button>{t('temperaturePage.upload.selectFile')}</Button>
+                            </Upload>
+                            {/* 进度条 */}
+                            <div className={styles.uploadContainer}>
+                                {uploading && (
+                                    <Progress
+                                        percent={uploadProgress}
+                                        status="active"
+                                    />
+                                )}
+                            </div>
 
-      {/* 右侧卡片组 */}
-      <div className={styles.rightContainer}>
-        {/* 数据操作 */}
-        {/* <Card title={t('temperaturePage.actions.title')} className={styles.card}>
+                            {/* // 文件名 */}
+                            <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file?.name}</p>
+                            {/* 上传文件 */}
+                            <Button
+                                type="primary"
+                                onClick={handleUpload}
+                                loading={uploading}
+                                className={styles.uploadButton}
+                                disabled={!file}
+                            >
+                                {t('temperaturePage.upload.uploadButton')}
+                            </Button>
+
+                            <Button
+                                onClick={() => setIsStructureModalOpen(true)}
+                                className={styles.actionButton}
+                                disabled={!file}
+                            >
+                                {t('temperaturePage.actions.viewStructure')}
+                            </Button>
+                        </>
+                    }
+                </Card>
+
+                {/* 数据查询 */}
+                <Card title={t('temperaturePage.query.title')} className={styles.card}>
+                    {variables.length === 0 ? (
+                        <EmptyState description="请先上传数据文件"/>
+                    ) : (
+                        <Form form={form} onFinish={confirm}>
+                            <Form.Item name="lon" label={t('temperaturePage.query.x')} rules={[{required: true}]}>
+                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                                    {variables.map(v => (
+                                        <Option key={v.name} value={v.name}>{v.name}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item name="lat" label={t('temperaturePage.query.y')} rules={[{required: true}]}>
+                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                                    {variables.map(v => (
+                                        <Option key={v.name} value={v.name}>{v.name}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item name="z" label={t('temperaturePage.query.z')}>
+                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                                    {variables.map(v => (
+                                        <Option key={v.name} value={v.name}>{v.name}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item name="f" label={t('temperaturePage.query.f')} rules={[{required: true}]}>
+                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                                    {variables.map(v => (
+                                        <Option key={v.name} value={v.name}>{v.name}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item name="renderMode" label="渲染方式" initialValue="point">
+                                <Select>
+                                    <Option value="point">点渲染</Option>
+                                    <Option value="column">柱渲染</Option>
+                                    <Option value="contour">等值线渲染</Option>
+                                </Select>
+                            </Form.Item>
+
+                            <Button type="primary" htmlType="submit" loading={confirmLoading}
+                                    className={styles.confirmButton}>
+                                确认
+                            </Button>
+
+                            <Button onClick={clearHeatmap}
+                                    className={styles.actionButton}>{t('temperaturePage.actions.clearHeatmap')}</Button>
+                        </Form>)}
+
+                </Card>
+            </div>
+
+            {/* 右侧卡片组 */}
+            <div className={styles.rightContainer}>
+                {/* 数据操作 */}
+                {/* <Card title={t('temperaturePage.actions.title')} className={styles.card}>
           {!data.length > 0 ? <EmptyState description="请先上传数据文件" /> : <>
           </>}
         </Card> */}
 
-        {/* 渲染效率 */}
-        <Card title={t('temperaturePage.rendering.title')} className={styles.card}>
-          {data.length > 0 ? <><div>{t('temperaturePage.rendering.dataPoints')}: {data.length}</div>
-            <div>{t('temperaturePage.rendering.sampleRate')}: {Math.max(1, Math.floor(data.length / 10000))}</div>
-            <div>{t('temperaturePage.rendering.actualPoints')}: {Math.floor(data.length / Math.max(1, Math.floor(data.length / 10000)))}</div></> : <EmptyState description="请先上传数据文件" />}
+                {/* 渲染效率 */}
+                <Card title={t('temperaturePage.rendering.title')} className={styles.card}>
+                    {renderInfo ? <>
+                        <div>{t('temperaturePage.rendering.dataPoints')}: {renderInfo.originLength}</div>
+                        <div>{t('temperaturePage.rendering.sampleRate')}: {renderInfo.sampleRate}</div>
+                        <div>{t('temperaturePage.rendering.actualPoints')}: {renderInfo.renderPointsLength}</div>
+                    </> : <EmptyState description="请先上传数据文件"/>}
 
-        </Card>
-      </div>
+                </Card>
+            </div>
 
 
-      {/* 表格模态框 */}
-      <Modal
-        open={isStructureModalOpen}
-        onCancel={() => setIsStructureModalOpen(false)}
-        footer={null}
-        width="80%"
-        wrapClassName={styles.modalWrap}
+            {/* 表格模态框 */}
+            <Modal
+                open={isStructureModalOpen}
+                onCancel={() => setIsStructureModalOpen(false)}
+                footer={null}
+                width="80%"
+                wrapClassName={styles.modalWrap}
 
-      >
-        <DataStructureViewer
-          data={header}
-        />
-      </Modal>
-    </div>
+            >
+                <DataStructureViewer
+                    data={header}
+                />
+            </Modal>
+        </div>
 
-  );
+    );
 };
 
 export default NcFilePage;
