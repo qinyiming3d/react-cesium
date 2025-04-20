@@ -61,14 +61,14 @@ app.post('/api/ncFileHandler', upload.single('file'), ncFileHandler);
 // 获取网格数据路由
 app.get('/api/getGridData', async (req, res) => {
     try {
-        const {filePath, params} = req.query;
+        let {filePath, params} = req.query;
 
         if (!filePath) {
             return res.status(400).json({error: '缺少filePath参数'});
         }
 
-        if(filePath.includes('qinyimingOwner')){
-            filePath = path.resolve(__dirname, 'forecast_files', path.basename(filePath));
+        if (filePath.includes('qinyimingOwner')) {
+            filePath = path.resolve(__dirname, 'scalar', 'forever_files', path.basename(filePath));
         }
 
         // 解析params参数
@@ -79,20 +79,14 @@ app.get('/api/getGridData', async (req, res) => {
             return res.status(400).json({error: 'params参数格式不正确'});
         }
 
-        let originData = util.getTemperatureData(safePath, parsedParams);
+        let {resultArr: sampledData, dataInfo} = util.getTemperatureData(filePath, parsedParams);
 
-        const sampleRate = Math.max(1, Math.floor(originData.length / 10000)); // 采样率
-        // 采样数据
-        let sampledData = originData.filter((_, index) => index % sampleRate === 0);
-        // 过滤掉无效数据
-        sampledData = sampledData.filter(item => item[2]);
 
         // 点渲染逻辑 - 根据温度范围从白到红渐变
         const temps = sampledData.map(item => item[2]);
         const min = Math.min(...temps);
         const max = Math.max(...temps);
 
-        const originLength = originData.length;
         const renderPointsLength = sampledData.length;
 
 
@@ -102,9 +96,11 @@ app.get('/api/getGridData', async (req, res) => {
                 header: {
                     min,
                     max,
-                    sampleRate,
-                    originLength,
-                    renderPointsLength
+                    sampleRate: dataInfo.sampleRate,
+                    originLength: dataInfo.originLength,
+                    renderPointsLength,
+                    lonDistance: dataInfo.lonDistance,
+                    latDistance: dataInfo.latDistance
                 },
                 sampledData
             }

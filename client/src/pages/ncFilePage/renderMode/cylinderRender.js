@@ -10,7 +10,8 @@ import {
     ColorMaterialProperty
 } from 'cesium';
 
-const cylinderRender = (viewer, data, min, max) => {
+const cylinderRender = (viewer, data, header) => {
+    const {min, max} = header;
     // 改用EllipsoidPrimitive实现柱渲染效果
     const dataSource = new CustomDataSource('cylinder');
 

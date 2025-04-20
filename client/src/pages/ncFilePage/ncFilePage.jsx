@@ -149,9 +149,8 @@ const NcFilePage = ({viewer, measureRender, performanceData, measureUpload}) => 
             const newDataSource = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header);
             setDataSource(newDataSource);
 
-
+            messageApi.success('渲染成功');
         } catch (error) {
-            console.log(error);
             messageApi.error('结构选择不符合规范');
         } finally {
             seConfirmLoading(false);

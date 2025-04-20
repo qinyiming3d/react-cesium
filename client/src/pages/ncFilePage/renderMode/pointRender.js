@@ -1,6 +1,7 @@
 import {Color, Cartesian3, CustomDataSource, Entity, HeightReference} from 'cesium';
 
-const pointRender = (viewer, data, min, max) => {
+const pointRender = (viewer, data, header) => {
+    const {min, max} = header;
     const dataSource = new CustomDataSource('point');
     const batchSize = 5000;
     for (let i = 0; i < data.length; i += batchSize) {
