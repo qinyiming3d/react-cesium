@@ -1,7 +1,6 @@
 import {request} from "@_public/apis/request";
 
-// 从nc文件获取温度数据
-export const getHeaderByNc = (file, socket) => {
+export const getHeaderByNc = (file, onUploadProgress) => {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -10,9 +9,9 @@ export const getHeaderByNc = (file, socket) => {
         data: formData,
         headers: {
             'Content-Type': 'multipart/form-data',
-            'socket-id': socket.id
         },
-    })
+        onUploadProgress,
+    });
 }
 // const result = {
 //     status: 'success',

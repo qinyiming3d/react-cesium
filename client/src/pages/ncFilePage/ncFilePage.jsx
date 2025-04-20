@@ -1,11 +1,9 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {io} from 'socket.io-client';
+import React, {useState, useEffect} from 'react';
 import {Button, message, Upload, Card, theme, Modal, Form, Select, Progress} from 'antd';
 import EmptyState from '@components/EmptyState/EmptyState';
 import {useTranslation} from 'react-i18next';
 import DataStructureViewer from '@components/DataStructureViewer/DataStructureViewer';
 import {vectorController, scalarController} from '@_public/apis/index.js';
-import {BASE_URL} from '@_public/apis/request.js';
 import pointRender from './renderMode/pointRender.js';
 import cylinderRender from './renderMode/cylinderRender.js';
 import lineRender from './renderMode/lineRender.js';
@@ -17,7 +15,7 @@ import {Cartesian3} from 'cesium';
 const {useToken} = theme;
 const {Option} = Select;
 
-const NcFilePage = ({viewer, measureRender, performanceData, measureUpload}) => {
+const NcFilePage = ({viewer}) => {
     const {t} = useTranslation();
     const {token} = useToken();
     const [file, setFile] = useState(null);
@@ -47,38 +45,15 @@ const NcFilePage = ({viewer, measureRender, performanceData, measureUpload}) => 
         shader: shaderRender, // 着色渲染
     };
 
-    const [dataSource, setDataSource] = useState(null); // entity实例
-    const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
-
-    const [socket, setSocket] = useState(null);
-
     useEffect(() => {
-        const newSocket = io(BASE_URL, {
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000
-        });
-
-        newSocket.on('connect', () => {
-            console.log('Socket connected:', newSocket.id);
-        });
-
-        newSocket.on('upload-progress', (data) => {
-            setUploadProgress(data.progress);
-        });
-
-        newSocket.on('connect_error', (err) => {
-            console.error('Socket连接错误:', err);
-        });
-
-        setSocket(newSocket);
-
         return () => {
-            newSocket.disconnect();
             messageApi.destroy();
             clearHeatmap();
-        };
-    }, []);
+        }
+    }, [])
+
+    const [dataSource, setDataSource] = useState(null); // entity实例
+    const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
 
     const handlePresetSelect = async (value) => {
         const preset = presetFiles.find((file) => file.name === value);
@@ -87,7 +62,6 @@ const NcFilePage = ({viewer, measureRender, performanceData, measureUpload}) => 
         setVariables(res.data.header.variables || []);
         setFilePath(res.data.filePath);
         setHeader(res.data.header);
-        console.log(res.data.selectOption)
         form?.setFields(res.data.selectOption);
     };
 
@@ -106,7 +80,10 @@ const NcFilePage = ({viewer, measureRender, performanceData, measureUpload}) => 
         setUploading(true);
         setUploadProgress(0);
         try {
-            const res = await scalarController.getHeaderByNc(file, socket)
+            const res = await scalarController.getHeaderByNc(file, (progressEvent) => {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadProgress(percentCompleted);
+            });
             messageApi.success('上传成功');
             setVariables(res.data.header.variables || []);
             setFilePath(res.data.filePath);

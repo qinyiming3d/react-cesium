@@ -4,23 +4,15 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const {createServer} = require('http');
-const {Server} = require('socket.io');
 const ncFileHandler = require('./scalar/ncFileHandler');
 const vectorHandler = require('./vector/vectorHandler');
 const util = require('./scalar/util');
 
-
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
 
 // 配置上传临时目录
-const uploadDir = path.join(__dirname, 'saved_files');
+const uploadDir = path.join(__dirname, 'scalar', 'temp_files');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
@@ -31,6 +23,7 @@ const upload = multer({
     limits: {
         fileSize: 100 * 1024 * 1024 // 限制100MB
     },
+
     fileFilter: (req, file, cb) => {
         // 验证文件类型
         const isNCFile = file.mimetype === 'application/x-netcdf' ||
@@ -123,6 +116,3 @@ const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
     console.log(`服务器运行在端口 ${PORT}`);
 });
-
-// 将socket.io实例附加到app对象
-app.set('socketio', io);
