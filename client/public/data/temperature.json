@@ -246,11 +246,11 @@
     "selectOption": [
       {
         "name": "lon",
-        "value": "longitude"
+        "value": "lon"
       },
       {
         "name": "lat",
-        "value": "latitude"
+        "value": "lat"
       },
       {
         "name": "f",
