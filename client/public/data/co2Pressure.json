@@ -1,0 +1,166 @@
+{
+  "status": "success",
+  "data": {
+    "header": {
+      "version": 1,
+      "dimensions": [
+        {
+          "name": "time",
+          "size": 12
+        },
+        {
+          "name": "latitude",
+          "size": 180
+        },
+        {
+          "name": "longitude",
+          "size": 360
+        }
+      ],
+      "globalAttributes": [
+        {
+          "name": "creation_date",
+          "type": "char",
+          "value": "01-Sep-2022 16:32:46"
+        },
+        {
+          "name": "institution",
+          "type": "char",
+          "value": "Institute of Oceanology, Chinese Academy of Sciences"
+        },
+        {
+          "name": "model_id",
+          "type": "char",
+          "value": "Stepwise FFNN"
+        },
+        {
+          "name": "contact",
+          "type": "char",
+          "value": "Zhong Guorong (zhongguorong18@mails.ucas.ac.cn)"
+        },
+        {
+          "name": "version",
+          "type": "char",
+          "value": "2022 version 2.0"
+        }
+      ],
+      "variables": [
+        {
+          "name": "time",
+          "dimensions": [
+            0
+          ],
+          "attributes": [
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "month"
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "month 1-12"
+            }
+          ],
+          "type": "double",
+          "size": 96,
+          "offset": 784,
+          "record": false
+        },
+        {
+          "name": "latitude",
+          "dimensions": [
+            1
+          ],
+          "attributes": [],
+          "type": "double",
+          "size": 1440,
+          "offset": 880,
+          "record": false
+        },
+        {
+          "name": "longitude",
+          "dimensions": [
+            2
+          ],
+          "attributes": [],
+          "type": "double",
+          "size": 2880,
+          "offset": 2320,
+          "record": false
+        },
+        {
+          "name": "pCO2",
+          "dimensions": [
+            0,
+            2,
+            1
+          ],
+          "attributes": [
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "pCO2 [\\muatm]"
+            },
+            {
+              "name": "missing_value",
+              "type": "char",
+              "value": "nan"
+            }
+          ],
+          "type": "double",
+          "size": 6220800,
+          "offset": 5200,
+          "record": false
+        },
+        {
+          "name": "Flux",
+          "dimensions": [
+            0,
+            2,
+            1
+          ],
+          "attributes": [
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "CO_2 Flux [mol m^-^2 yr^-^1]"
+            },
+            {
+              "name": "missing_value",
+              "type": "char",
+              "value": "nan"
+            }
+          ],
+          "type": "double",
+          "size": 6220800,
+          "offset": 6226000,
+          "record": false
+        }
+      ],
+      "recordDimension": {
+        "length": 0,
+        "recordStep": 0
+      }
+    },
+    "filePath": "qinyimingOwner/co2Pressure.nc",
+    "selectOption": [
+      {
+        "name": "lon",
+        "value": "longitude"
+      },
+      {
+        "name": "lat",
+        "value": "latitude"
+      },
+      {
+        "name": "f",
+        "value": "pCO2"
+      },
+      {
+        "name": "renderMode",
+        "value": "shader"
+      }
+    ]
+  }
+}

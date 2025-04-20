@@ -67,10 +67,8 @@ app.get('/api/getGridData', async (req, res) => {
             return res.status(400).json({error: '缺少filePath参数'});
         }
 
-        // 防止目录遍历攻击
-        const safePath = filePath;
-        if (!safePath.startsWith(path.join(__dirname, 'scalar/temp_files'))) {
-            return res.status(403).json({error: '非法文件路径'});
+        if(filePath.includes('qinyimingOwner')){
+            filePath = path.resolve(__dirname, 'forecast_files', path.basename(filePath));
         }
 
         // 解析params参数

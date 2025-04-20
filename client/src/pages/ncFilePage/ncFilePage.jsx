@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {io} from 'socket.io-client';
 import {Button, message, Upload, Card, theme, Modal, Form, Select, Progress} from 'antd';
 import EmptyState from '@components/EmptyState/EmptyState';
@@ -12,11 +12,12 @@ import lineRender from './renderMode/lineRender.js';
 import shaderRender from "./renderMode/shaderRender.js";
 import getPrimitiveEllipsoid from './test'
 import styles from './index.module.scss';
+import {Cartesian3} from 'cesium';
 
 const {useToken} = theme;
 const {Option} = Select;
 
-const NcFilePage = ({viewer}) => {
+const NcFilePage = ({viewer, measureRender, performanceData, measureUpload}) => {
     const {t} = useTranslation();
     const {token} = useToken();
     const [file, setFile] = useState(null);
@@ -26,11 +27,18 @@ const NcFilePage = ({viewer}) => {
     const [variables, setVariables] = useState([]); // 用于生成下拉框选项
     const [filePath, setFilePath] = useState('');  // 用于后续查询
     const [form] = Form.useForm();
-    const [header, setHeader] = useState({}); // 用于渲染头文件表格
+    const [header, setHeader] = useState(null); // 用于渲染头文件表格
     const [messageApi, contextHolder] = message.useMessage({
         top: '10vh',
     });
-    const [renderInfo, setRenderInfo] = useState({});
+    const [renderInfo, setRenderInfo] = useState(null);
+
+    const [presetFiles, setPresetFiles] = useState([
+        {name: '温度场nc数据', path: '/data/temperature.json'},
+        {name: '二氧化碳分压', path: '/data/co2Pressure.json'},
+        {name: '盐度场数据', path: '/data/salinity.json'},
+    ]);
+    const [selectedPreset, setSelectedPreset] = useState(null);
 
     const renderMethods = {
         point: pointRender, // 点渲染
@@ -72,11 +80,24 @@ const NcFilePage = ({viewer}) => {
         };
     }, []);
 
+    const handlePresetSelect = async (value) => {
+        const preset = presetFiles.find((file) => file.name === value);
+        const res = await scalarController.getPresetData(preset.path);
+        setSelectedPreset(preset.name);
+        setVariables(res.data.header.variables || []);
+        setFilePath(res.data.filePath);
+        setHeader(res.data.header);
+        console.log(res.data.selectOption)
+        form?.setFields(res.data.selectOption);
+    };
+
     const handleUpload = async () => {
-        // getPrimitiveEllipsoid(viewer);
-        //
-        //
-        // viewer.scene.primitives.add(primitive);
+        const cartesian3_1 = Cartesian3.fromDegrees(0, 0); // {x: 6378137, y: 0, z: 0}
+        const cartesian3_2 = Cartesian3.fromDegrees(90, 0); // {x: 0, y: 6378137, z: 0}
+        const cartesian3_3 = Cartesian3.fromDegrees(0, 90); // {x: 0, y: 0, z: 6356752.314245179}
+        const cartesian3_4 = Cartesian3.fromDegrees(0, 0, -6378137); //{x: 0, y: 0, z: 0}
+
+
         if (!file) {
             messageApi.warning('请先选择文件');
             return;
@@ -85,12 +106,13 @@ const NcFilePage = ({viewer}) => {
         setUploading(true);
         setUploadProgress(0);
         try {
-            const res = await scalarController.getHeaderByNc(file, socket);
+            const res = await scalarController.getHeaderByNc(file, socket)
             messageApi.success('上传成功');
             setVariables(res.data.header.variables || []);
             setFilePath(res.data.filePath);
             setHeader(res.data.header);
             form?.resetFields();
+            setSelectedPreset(null);
         } catch (error) {
             messageApi.error('上传失败');
         } finally {
@@ -119,11 +141,17 @@ const NcFilePage = ({viewer}) => {
 
             setRenderInfo({...res.data.header})
 
-            const newDataSource = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header.min, res.data.header.max);
+            await scalarController.getGridData(filePath, JSON.stringify(params));
+
+            clearHeatmap();
+            setRenderInfo({...res.data.header});
+
+            const newDataSource = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header);
             setDataSource(newDataSource);
 
-            messageApi.success('渲染成功');
+
         } catch (error) {
+            console.log(error);
             messageApi.error('结构选择不符合规范');
         } finally {
             seConfirmLoading(false);
@@ -140,7 +168,7 @@ const NcFilePage = ({viewer}) => {
         if (viewer && dataSource) {
             viewer.dataSources.remove(dataSource);
             setDataSource(null);
-            setRenderInfo({});
+            setRenderInfo(null);
         }
     };
 
@@ -162,6 +190,21 @@ const NcFilePage = ({viewer}) => {
                             >
                                 <Button>{t('temperaturePage.upload.selectFile')}</Button>
                             </Upload>
+
+                            {/* 预设文件下拉框 */}
+                            <Select
+                                placeholder="选择预设文件"
+                                value={selectedPreset}
+                                onChange={handlePresetSelect}
+                                className={styles.presetSelect}
+                            >
+                                {presetFiles.map((preset) => (
+                                    <Option key={preset.name} value={preset.name}>
+                                        {preset.name}
+                                    </Option>
+                                ))}
+                            </Select> (预设文件)
+
                             {/* 进度条 */}
                             <div className={styles.uploadContainer}>
                                 {uploading && (
@@ -172,7 +215,7 @@ const NcFilePage = ({viewer}) => {
                                 )}
                             </div>
 
-                            {/* // 文件名 */}
+                            {/* 文件名 */}
                             <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file?.name}</p>
                             {/* 上传文件 */}
                             <Button
@@ -188,7 +231,7 @@ const NcFilePage = ({viewer}) => {
                             <Button
                                 onClick={() => setIsStructureModalOpen(true)}
                                 className={styles.actionButton}
-                                disabled={!file}
+                                disabled={!header}
                             >
                                 {t('temperaturePage.actions.viewStructure')}
                             </Button>
@@ -239,6 +282,7 @@ const NcFilePage = ({viewer}) => {
                                     <Option value="point">点渲染</Option>
                                     <Option value="column">柱渲染</Option>
                                     <Option value="contour">等值线渲染</Option>
+                                    <Option value="shader">shader渲染</Option>
                                 </Select>
                             </Form.Item>
 
@@ -266,9 +310,9 @@ const NcFilePage = ({viewer}) => {
                 <Card title={t('temperaturePage.rendering.title')} className={styles.card}>
                     {renderInfo ? <>
                         <div>{t('temperaturePage.rendering.dataPoints')}: {renderInfo.originLength}</div>
-                        <div>{t('temperaturePage.rendering.sampleRate')}: {renderInfo.sampleRate}</div>
                         <div>{t('temperaturePage.rendering.actualPoints')}: {renderInfo.renderPointsLength}</div>
-                    </> : <EmptyState description="请先上传数据文件"/>}
+                        <div>{t('temperaturePage.rendering.sampleRate')}: {renderInfo.sampleRate}</div>
+                    </> : <EmptyState description="请点击确认渲染"/>}
 
                 </Card>
             </div>
@@ -292,4 +336,6 @@ const NcFilePage = ({viewer}) => {
     );
 };
 
+
 export default NcFilePage;
+

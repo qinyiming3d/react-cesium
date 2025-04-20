@@ -1,60 +1,64 @@
 .container {
-    --card-width: 400px;
-    --card-gap: 16px;
-    --top-position: 80px;
-    --side-margin: 20px;
+  --card-width: 400px;
+  --card-gap: 16px;
+  --top-position: 80px;
+  --side-margin: 20px;
 }
 
 .leftContainer {
-    position: absolute;
-    top: var(--top-position);
-    left: var(--side-margin);
-    width: var(--card-width);
-    pointer-events: auto;
-    z-index: 1;
+  position: absolute;
+  top: var(--top-position);
+  left: var(--side-margin);
+  width: var(--card-width);
+  pointer-events: auto;
+  z-index: 1;
 }
 
 .rightContainer {
-    position: absolute;
-    top: var(--top-position);
-    right: var(--side-margin);
-    width: var(--card-width);
-    pointer-events: auto;
-    z-index: 1;
+  position: absolute;
+  top: var(--top-position);
+  right: var(--side-margin);
+  width: var(--card-width);
+  pointer-events: auto;
+  z-index: 1;
 }
 
 .card {
-    margin-bottom: var(--card-gap);
-    // background: var(--card-bg);
-    // color: var(--card-text);
+  margin-bottom: var(--card-gap);
+  // background: var(--card-bg);
+  // color: var(--card-text);
 }
 
 .fileName {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 .uploadButton {
-    margin-top: 8px;
+  margin-top: 8px;
 }
 
 .confirmButton {
-    margin-top: var(--card-gap);
+  margin-top: var(--card-gap);
 }
 
 .dataInfo {
-    margin-bottom: var(--card-gap);
+  margin-bottom: var(--card-gap);
 }
 
 .actionButton {
-    // margin-top: var(--card-gap);
-    margin-left: var(--card-gap);
+  // margin-top: var(--card-gap);
+  margin-left: var(--card-gap);
 }
 
 .modalWrap {
-    // overflow: hidden !important;
-    overflow: hidden !important;
+  // overflow: hidden !important;
+  overflow: hidden !important;
 }
 
 .uploadContainer {
-    height: 20px;
+  height: 20px;
+}
+
+.presetSelect {
+  margin-left: 15px;
 }

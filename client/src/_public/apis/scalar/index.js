@@ -61,3 +61,9 @@ export const getGridData = (filePath, params) => {
 //         sampledData: [['经度', '纬度', '温度'],[],[]]
 //     }
 // }
+
+export const getPresetData = (url) => {
+    return request.get({
+        url,
+    })
+}

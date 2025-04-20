@@ -3,10 +3,10 @@ import Request from '../tools/request';
 export const BASE_URL = 'http://localhost:3001';
 
 export const request = new Request({
-    baseURL: BASE_URL,
+    baseURL: '',
 });
 
 export const requestWithNoProgress = new Request({
-    baseURL: BASE_URL,
+    baseURL: '',
     hideProgress: true,
 })

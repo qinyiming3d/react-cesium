@@ -1,0 +1,265 @@
+{
+  "status": "success",
+  "data": {
+    "header": {
+      "version": 1,
+      "dimensions": [
+        {
+          "name": "lat",
+          "size": 360
+        },
+        {
+          "name": "lon",
+          "size": 720
+        },
+        {
+          "name": "time",
+          "size": 1
+        },
+        {
+          "name": "depth_std",
+          "size": 41
+        }
+      ],
+      "globalAttributes": [
+        {
+          "name": "Title",
+          "type": "char",
+          "value": "IAP 3-Dimentional Subsurface temperature Dataset Using Adjusted IAP Objective Analysis method"
+        },
+        {
+          "name": "StartYear",
+          "type": "char",
+          "value": "1960"
+        },
+        {
+          "name": "StartMonth",
+          "type": "char",
+          "value": "1"
+        },
+        {
+          "name": "StartDay",
+          "type": "char",
+          "value": "1"
+        },
+        {
+          "name": "EndYear",
+          "type": "char",
+          "value": "1960"
+        },
+        {
+          "name": "EndMonth",
+          "type": "char",
+          "value": "1"
+        },
+        {
+          "name": "EndDay",
+          "type": "char",
+          "value": "30"
+        },
+        {
+          "name": "Period",
+          "type": "char",
+          "value": "1"
+        },
+        {
+          "name": "GridProjection",
+          "type": "char",
+          "value": "Mercator, gridded"
+        },
+        {
+          "name": "GridPoints",
+          "type": "char",
+          "value": "720x360"
+        },
+        {
+          "name": "Creator",
+          "type": "char",
+          "value": "Lijing Cheng and Guancheng Li From IAP,CAS,P.R.China"
+        },
+        {
+          "name": "Reference",
+          "type": "char",
+          "value": "****. Website: http://159.226.119.60/cheng/"
+        }
+      ],
+      "variables": [
+        {
+          "name": "lat",
+          "dimensions": [
+            0
+          ],
+          "attributes": [
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "latitude"
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "degree_north"
+            },
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "latitude"
+            }
+          ],
+          "type": "float",
+          "size": 1440,
+          "offset": 1464,
+          "record": false
+        },
+        {
+          "name": "lon",
+          "dimensions": [
+            1
+          ],
+          "attributes": [
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "longitude"
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "degree_east"
+            },
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "longitude"
+            }
+          ],
+          "type": "float",
+          "size": 2880,
+          "offset": 2904,
+          "record": false
+        },
+        {
+          "name": "time",
+          "dimensions": [
+            2
+          ],
+          "attributes": [
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "time: year/month"
+            },
+            {
+              "name": "reference_time",
+              "type": "double",
+              "value": 196001
+            },
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "time"
+            }
+          ],
+          "type": "float",
+          "size": 4,
+          "offset": 5784,
+          "record": false
+        },
+        {
+          "name": "depth_std",
+          "dimensions": [
+            3
+          ],
+          "attributes": [
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "standard depth"
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "m"
+            },
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "depth_std"
+            }
+          ],
+          "type": "float",
+          "size": 164,
+          "offset": 5788,
+          "record": false
+        },
+        {
+          "name": "temperature",
+          "dimensions": [
+            0,
+            1,
+            3
+          ],
+          "attributes": [
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "Ocean temperature (C)"
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "Ocean temperature (C)"
+            },
+            {
+              "name": "_FillValue",
+              "type": "double",
+              "value": 999
+            },
+            {
+              "name": "add_offset",
+              "type": "float",
+              "value": 0
+            },
+            {
+              "name": "scale_factor",
+              "type": "float",
+              "value": 1
+            },
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "Ocean temperature"
+            }
+          ],
+          "type": "float",
+          "size": 42508800,
+          "offset": 5952,
+          "record": false
+        }
+      ],
+      "recordDimension": {
+        "length": 0,
+        "recordStep": 0
+      }
+    },
+    "filePath": "qinyimingOwner/temperature.nc",
+    "selectOption": [
+      {
+        "name": "lon",
+        "value": "longitude"
+      },
+      {
+        "name": "lat",
+        "value": "latitude"
+      },
+      {
+        "name": "f",
+        "value": "temperature"
+      },
+      {
+        "name": "renderMode",
+        "value": "shader"
+      }
+    ]
+  }
+}
