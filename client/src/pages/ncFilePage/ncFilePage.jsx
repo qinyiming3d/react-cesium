@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Button, message, Upload, Card, theme, Modal, Form, Select, Progress} from 'antd';
+import {Button, message, Upload, Card, theme, Modal, Form, Select, Progress, Spin} from 'antd';
 import EmptyState from '@components/EmptyState/EmptyState';
 import {useTranslation} from 'react-i18next';
 import DataStructureViewer from '@components/DataStructureViewer/DataStructureViewer';
@@ -8,14 +8,13 @@ import pointRender from './renderMode/pointRender.js';
 import cylinderRender from './renderMode/cylinderRender.js';
 import lineRender from './renderMode/lineRender.js';
 import shaderRender from "./renderMode/shaderRender.js";
-import getPrimitiveEllipsoid from './test'
 import styles from './index.module.scss';
 import {Cartesian3} from 'cesium';
 
 const {useToken} = theme;
 const {Option} = Select;
 
-const NcFilePage = ({viewer}) => {
+const NcFilePage = ({viewer, isMobile}) => {
     const {t} = useTranslation();
     const {token} = useToken();
     const [file, setFile] = useState(null);
@@ -52,7 +51,7 @@ const NcFilePage = ({viewer}) => {
         }
     }, [])
 
-    const [dataSource, setDataSource] = useState(null); // entity实例
+    const [renderUnit, setRenderUnit] = useState(null); // entity实例
     const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
 
     const handlePresetSelect = async (value) => {
@@ -123,12 +122,12 @@ const NcFilePage = ({viewer}) => {
             clearHeatmap();
             setRenderInfo({...res.data.header});
 
-            const newDataSource = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header);
-            setDataSource(newDataSource);
+            const renderResult = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header);
+            setRenderUnit(renderResult);
 
             messageApi.success('渲染成功');
         } catch (error) {
-            messageApi.error('结构选择不符合规范');
+            messageApi.error(error.message);
         } finally {
             seConfirmLoading(false);
         }
@@ -141,9 +140,9 @@ const NcFilePage = ({viewer}) => {
 
     // 清除热力图
     const clearHeatmap = () => {
-        if (viewer && dataSource) {
-            viewer.dataSources.remove(dataSource);
-            setDataSource(null);
+        if (viewer && renderUnit) {
+            renderUnit.dispose();
+            setRenderUnit(null);
             setRenderInfo(null);
         }
     };
@@ -151,36 +150,38 @@ const NcFilePage = ({viewer}) => {
     return (
         <div className={styles.container}>
             {contextHolder}
+            <Spin spinning={confirmLoading} fullscreen />
             {/* 左侧容器 */}
             <div className={styles.leftContainer}>
                 {/* 数据上传 */}
                 <Card title={t('temperaturePage.upload.title')} className={styles.card}>
                     {
                         <>
-                            {/* 上传按钮 */}
-                            <Upload
-                                beforeUpload={beforeUpload}
-                                showUploadList={false}
-                                accept=".nc"
-                                disabled={uploading}
-                            >
-                                <Button>{t('temperaturePage.upload.selectFile')}</Button>
-                            </Upload>
+                            <div className={styles.flex}>
+                                {/* 上传按钮 */}
+                                <Upload
+                                    beforeUpload={beforeUpload}
+                                    showUploadList={false}
+                                    accept=".nc"
+                                    disabled={uploading}
+                                >
+                                    <Button>{t('temperaturePage.upload.selectFile')}</Button>
+                                </Upload>
 
-                            {/* 预设文件下拉框 */}
-                            <Select
-                                placeholder="选择预设文件"
-                                value={selectedPreset}
-                                onChange={handlePresetSelect}
-                                className={styles.presetSelect}
-                            >
-                                {presetFiles.map((preset) => (
-                                    <Option key={preset.name} value={preset.name}>
-                                        {preset.name}
-                                    </Option>
-                                ))}
-                            </Select> (预设文件)
-
+                                {/* 预设文件下拉框 */}
+                                <Select
+                                    placeholder="选择预设文件"
+                                    value={selectedPreset}
+                                    onChange={handlePresetSelect}
+                                    className={styles.presetSelect}
+                                >
+                                    {presetFiles.map((preset) => (
+                                        <Option key={preset.name} value={preset.name}>
+                                            {preset.name}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </div>
                             {/* 进度条 */}
                             <div className={styles.uploadContainer}>
                                 {uploading && (

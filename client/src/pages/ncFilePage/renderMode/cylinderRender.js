@@ -66,7 +66,12 @@ const cylinderRender = (viewer, data, header) => {
 
     viewer.dataSources.add(dataSource);
 
-    return dataSource;
+    return {
+        type: 'dataSource',
+        dispose: () => {
+            viewer.dataSources.remove(dataSource);
+        }
+    }
 }
 
 export default cylinderRender;
