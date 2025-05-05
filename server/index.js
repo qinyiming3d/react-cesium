@@ -8,6 +8,7 @@ const ncFileHandler = require('./scalar/ncFileHandler');
 const vectorHandler = require('./vector/vectorHandler');
 const util = require('./scalar/util');
 
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -74,14 +75,12 @@ app.get('/api/getGridData', async (req, res) => {
 
         let {resultArr: sampledData, dataInfo} = util.getTemperatureData(filePath, parsedParams);
 
-
         // 点渲染逻辑 - 根据温度范围从白到红渐变
         const temps = sampledData.map(item => item[2]);
         const min = Math.min(...temps);
         const max = Math.max(...temps);
 
         const renderPointsLength = sampledData.length;
-
 
         res.json({
             status: 'success',
@@ -93,7 +92,11 @@ app.get('/api/getGridData', async (req, res) => {
                     originLength: dataInfo.originLength,
                     renderPointsLength,
                     lonDistance: dataInfo.lonDistance,
-                    latDistance: dataInfo.latDistance
+                    latDistance: dataInfo.latDistance,
+                    textureWidth: dataInfo.textureWidth,
+                    textureHeight: dataInfo.textureHeight,
+                    latRange: dataInfo.latRange,
+                    lonRange: dataInfo.lonRange,
                 },
                 sampledData
             }

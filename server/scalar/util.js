@@ -45,9 +45,7 @@ const getTemperatureData = (filePath, params) => {
     const indexOrder = reader.variables.find(item => item.name === params.f).dimensions;
     // [3, 2, 1]
     const f = reader.getDataVariable(params.f);
-    const resultArray = convertTo2DArray(params.lon, params.lat, params.z, f, indexOrder, indexMapping);
-
-
+    const resultArray = convertTo2DArray(params.lon, params.lat, params.z, f, indexOrder, indexMapping, params.isSample);
     // for (let i = 0; i < lat.length; i++) {
     //   for (let j = 0; j < lon.length; j++) {
     //     const tempIndex = i * lat.length * depth.length + j * depth.length; // 假设我们关心的是深度为0的数据
@@ -69,7 +67,7 @@ const getTemperatureData = (filePath, params) => {
     return resultArray;
 };
 
-function convertTo2DArray(lonName, latName, zName, f, index, indexMapping) {
+function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSample) {
     const xObject = indexMapping[index[0]];
     xObject.demension = '一维';
     const yObject = indexMapping[index[1]];
@@ -86,12 +84,20 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping) {
     const lonObject = [xObject, yObject, zObject].find(item => item.name === lonName);
     const latObject = [xObject, yObject, zObject].find(item => item.name === latName);
     const heightObject = [xObject, yObject, zObject].find(item => item.name === zName);
-    let resultArr = [];
+
 
     const originLength = lonObject.data.length * latObject.data.length;
-    const sampleRate = Math.max(1, Math.floor(originLength / 50000)); // 采样率
+    const sampleRate = isSample ? Math.max(1, Math.floor(originLength / 50000)) : 1; // 采样率
     // const lonDistance = lonObject.data[1] - lonObject.data[0];
     // const latDistance = latObject.data[1] - latObject.data[0];
+    const latRange = [Math.min(...latObject.data), Math.max(...latObject.data)];
+    const lonRange = [Math.min(...lonObject.data), Math.max(...lonObject.data)];
+
+    const textureWidth = lonObject.data.length / sampleRate;
+    const textureHeight = latObject.data.length / sampleRate;
+
+    let resultArr = [];
+
 
     // 默认显示高度为0层
     for (let i = 0; i < lonObject.data.length; i += sampleRate) {
@@ -109,6 +115,7 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping) {
     const latDistance = sampledLats.length > 1 ? sampledLats[1] - sampledLats[0] : 0;
 
     resultArr = resultArr.filter(item => item[2]);
+
     // for (let k = 0; k < heightObject.data.length; k++) {
     //     for (let i = 0; i < lonObject.data.length; i++) {
     //         for (let j = 0; j < latObject.data.length; j++) {
@@ -120,7 +127,7 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping) {
     //         }
     //     }
     // }
-    return {resultArr, dataInfo: {lonDistance, latDistance, sampleRate, originLength}};
+    return {resultArr, dataInfo: {lonDistance, latDistance, sampleRate, originLength, textureWidth, textureHeight, latRange, lonRange}};
 }
 
 module.exports = {

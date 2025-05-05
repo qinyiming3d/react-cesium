@@ -10,6 +10,8 @@ import lineRender from './renderMode/lineRender.js';
 import shaderRender from "./renderMode/shaderRender.js";
 import styles from './index.module.scss';
 import {Cartesian3} from 'cesium';
+import rectangleRender from "@pages/ncFilePage/renderMode/rectangleRender.js";
+import Legend from "@components/Legend/Legend.jsx";
 
 const {useToken} = theme;
 const {Option} = Select;
@@ -29,6 +31,7 @@ const NcFilePage = ({viewer, isMobile}) => {
         top: '10vh',
     });
     const [renderInfo, setRenderInfo] = useState(null);
+    const [legendData, setLegendData] = useState(null);
 
     const [presetFiles, setPresetFiles] = useState([
         {name: '温度场nc数据', path: '/data/temperature.json'},
@@ -41,7 +44,8 @@ const NcFilePage = ({viewer, isMobile}) => {
         point: pointRender, // 点渲染
         column: cylinderRender, // 柱渲染
         contour: lineRender, // 等值线渲染
-        shader: shaderRender, // 着色渲染
+        shader: shaderRender, // shader渲染
+        rectangleRender: rectangleRender, // 矩形渲染
     };
 
     useEffect(() => {
@@ -96,24 +100,29 @@ const NcFilePage = ({viewer, isMobile}) => {
         }
     };
 
+    const updateLegendData = (data) => {
+        setLegendData(data)
+    };
+
     const confirm = async (values) => {
         if (!viewer) {
             messageApi.warning('cesium矢量地图未加载，请检查网络是否正常');
         }
         try {
             seConfirmLoading(true);
+            const renderMode = form.getFieldValue('renderMode') || 'point';
             const params = {
                 lon: values.lon,
                 lat: values.lat,
                 z: values.z,
-                f: values.f
+                f: values.f,
+                isSample: !(renderMode === 'rectangleRender')
             };
 
             const res = await scalarController.getGridData(filePath, JSON.stringify(params));
 
             clearHeatmap();
 
-            const renderMode = form.getFieldValue('renderMode') || 'point';
 
             setRenderInfo({...res.data.header})
 
@@ -122,7 +131,7 @@ const NcFilePage = ({viewer, isMobile}) => {
             clearHeatmap();
             setRenderInfo({...res.data.header});
 
-            const renderResult = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header);
+            const renderResult = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header, updateLegendData);
             setRenderUnit(renderResult);
 
             messageApi.success('渲染成功');
@@ -144,13 +153,14 @@ const NcFilePage = ({viewer, isMobile}) => {
             renderUnit.dispose();
             setRenderUnit(null);
             setRenderInfo(null);
+            setLegendData(null);
         }
     };
 
     return (
         <div className={styles.container}>
             {contextHolder}
-            <Spin spinning={confirmLoading} fullscreen />
+            <Spin spinning={confirmLoading} fullscreen/>
             {/* 左侧容器 */}
             <div className={styles.leftContainer}>
                 {/* 数据上传 */}
@@ -254,12 +264,13 @@ const NcFilePage = ({viewer, isMobile}) => {
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="renderMode" label="渲染方式" initialValue="point">
+                            <Form.Item name="renderMode" label="渲染方式" initialValue="rectangleRender">
                                 <Select>
                                     <Option value="point">点渲染</Option>
                                     <Option value="column">柱渲染</Option>
                                     <Option value="contour">等值线渲染</Option>
                                     <Option value="shader">shader渲染</Option>
+                                    <Option value="rectangleRender">纹理渲染</Option>
                                 </Select>
                             </Form.Item>
 
@@ -290,9 +301,15 @@ const NcFilePage = ({viewer, isMobile}) => {
                         <div>{t('temperaturePage.rendering.actualPoints')}: {renderInfo.renderPointsLength}</div>
                         <div>{t('temperaturePage.rendering.sampleRate')}: {renderInfo.sampleRate}</div>
                     </> : <EmptyState description="请点击确认渲染"/>}
-
                 </Card>
             </div>
+
+            {legendData && <Legend
+                min={legendData.min}
+                max={legendData.max}
+                gradient={legendData.colors}
+                width={200}
+                height={30}/>}
 
 
             {/* 表格模态框 */}

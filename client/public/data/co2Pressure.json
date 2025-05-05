@@ -159,7 +159,7 @@
       },
       {
         "name": "renderMode",
-        "value": "shader"
+        "value": "rectangleRender"
       }
     ]
   }
