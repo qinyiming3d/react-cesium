@@ -3,6 +3,7 @@ import {
     Primitive,
 } from 'cesium'
 import sourceShader from './shader/rectangleSorceShader.glsl'
+import GeneratorTexture from "@pages/ncFilePage/renderMode/GeneratorTexture.js";
 
 // 定义颜色带数组，每个元素包含温度值和对应的 RGBA 颜色值
 function generateColorArray(minTemp, maxTemp) {
@@ -137,73 +138,6 @@ function createColorTexture(range = [], colors) {
 }
 
 
-class TemperatureTextureGenerator {
-    constructor(options) {
-        this.resolution = options.resolution; // 匹配 u_image_res
-        this.dataRange = options.dataRange;         // 对应 u_range
-        this.colorRange = options.colorRange;       // 对应 u_color_range
-        this.latRange = options.latRange;           // 纬度范围
-        this._initGrid();
-    }
-
-    // 初始化空网格
-    _initGrid() {
-        this.grid = new Float32Array(this.resolution[0] * this.resolution[1]); // 默认填充0
-        this.grid.fill(Infinity);
-    }
-
-    // 经纬度转纹理坐标（适配Cesium矩形范围）
-    _lonLatToUV(lon, lat) {
-        // const lonRadio = lon <= 180 ? (1 - lon / 180) : (((lon - 180) / 180) * 0.5);
-        // const lonRadio = (lon - 0.5) / (360 - 0.5);
-        const lonRadio = lon / 360
-        const latRadio = (0 - lat - this.latRange[0]) / (this.latRange[1] - this.latRange[0]);
-        return [
-            lonRadio,                  // u ∈ [0,1]
-            latRadio  // v ∈ [0,1]
-        ];
-    }
-
-    // 添加原始数据点
-    addDataPoint(lon, lat, value) {
-        const [u, v] = this._lonLatToUV(lon, lat);
-        let x = Math.round(u * this.resolution[0]);
-        x = x > this.resolution[0] / 2 ? x - this.resolution[0] / 2 : x + this.resolution[0] / 2;
-        const y = Math.floor(v * this.resolution[1]);
-        const idx = y * this.resolution[0] + x;
-        this.grid[idx] = value
-    }
-
-    // 生成插值后纹理
-    generate() {
-        const canvas = document.createElement('canvas');
-        [canvas.width, canvas.height] = this.resolution;
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.createImageData(...this.resolution);
-
-        // 数据归一化
-        const minVal = this.dataRange[0];
-        const maxVal = this.dataRange[1];
-        const normalize = v => (v - minVal) / (maxVal - minVal);
-
-        // 填充像素（单通道R）
-        for (let i = 0; i < this.grid.length; i++) {
-            const val = this.grid[i];
-            if (val === Infinity) {
-                imageData.data[i * 4 + 3] = 255;                   // Alpha通道
-                continue;
-            }
-            const normVal = normalize(val) + 0.1;
-            imageData.data[i * 4] = Math.floor(normVal * 255); // R通道
-            imageData.data[i * 4 + 3] = 255;                   // Alpha通道
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-        return canvas;
-    }
-}
-
-
 // 渲染矩形区域
 export default function rectangleRender(viewer, data, header, updateLegendData) {
     const {lonDistance, latDistance, min, max, textureWidth, textureHeight, latRange, lonRange} = header; // 提取头部信息
@@ -218,10 +152,9 @@ export default function rectangleRender(viewer, data, header, updateLegendData) 
     // 创建颜色纹理对象
     const color = createColorTexture([], colors);
 
-    const textureGen = new TemperatureTextureGenerator({
+    const textureGen = new GeneratorTexture({
         resolution: [width, height],
         dataRange: [min, max],     // u_range: 温度实际范围10~40℃
-        colorRange: [color.colorRange[0], color.colorRange[1]],    // u_color_range: 颜色映射15~35℃
         latRange: latRange,
     });
 
