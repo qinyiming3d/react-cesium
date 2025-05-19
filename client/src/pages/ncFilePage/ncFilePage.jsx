@@ -11,6 +11,7 @@ import shaderRender from "./renderMode/shaderRender.js";
 import styles from './index.module.scss';
 import {Cartesian3} from 'cesium';
 import rectangleRender from "@pages/ncFilePage/renderMode/rectangleRender.js";
+import waterRender from "@pages/ncFilePage/renderMode/waterRender.js";
 import Legend from "@components/Legend/Legend.jsx";
 
 const {useToken} = theme;
@@ -46,6 +47,7 @@ const NcFilePage = ({viewer, isMobile}) => {
         contour: lineRender, // 等值线渲染
         shader: shaderRender, // shader渲染
         rectangleRender: rectangleRender, // 矩形渲染
+        waterRender: waterRender, // 水面渲染
     };
 
     useEffect(() => {
@@ -116,7 +118,7 @@ const NcFilePage = ({viewer, isMobile}) => {
                 lat: values.lat,
                 z: values.z,
                 f: values.f,
-                isSample: !(renderMode === 'rectangleRender')
+                isSample: !(['rectangleRender', 'waterRender'].includes(renderMode))
             };
 
             const res = await scalarController.getGridData(filePath, JSON.stringify(params));
@@ -271,6 +273,7 @@ const NcFilePage = ({viewer, isMobile}) => {
                                     <Option value="contour">等值线渲染</Option>
                                     <Option value="shader">shader渲染</Option>
                                     <Option value="rectangleRender">纹理渲染</Option>
+                                    <Option value="waterRender">水面渲染</Option>
                                 </Select>
                             </Form.Item>
 
