@@ -137,27 +137,26 @@ function createColorTexture(range = [], colors) {
 }
 
 
-
 class TemperatureTextureGenerator {
     constructor(options) {
         this.resolution = options.resolution; // 匹配 u_image_res
         this.dataRange = options.dataRange;         // 对应 u_range
         this.colorRange = options.colorRange;       // 对应 u_color_range
         this.latRange = options.latRange;           // 纬度范围
-        this.lonRange = options.lonRange;           // 经度范围
         this._initGrid();
     }
 
     // 初始化空网格
     _initGrid() {
-        this.grid = new Float32Array(this.resolution[0] * this.resolution[1]);
-        this.grid.fill(void 0);
+        this.grid = new Float32Array(this.resolution[0] * this.resolution[1]); // 默认填充0
+        this.grid.fill(Infinity);
     }
 
     // 经纬度转纹理坐标（适配Cesium矩形范围）
     _lonLatToUV(lon, lat) {
         // const lonRadio = lon <= 180 ? (1 - lon / 180) : (((lon - 180) / 180) * 0.5);
-        const lonRadio = (lon - this.lonRange[0]) / (this.lonRange[1] - this.lonRange[0]);
+        // const lonRadio = (lon - 0.5) / (360 - 0.5);
+        const lonRadio = lon / 360
         const latRadio = (0 - lat - this.latRange[0]) / (this.latRange[1] - this.latRange[0]);
         return [
             lonRadio,                  // u ∈ [0,1]
@@ -168,7 +167,7 @@ class TemperatureTextureGenerator {
     // 添加原始数据点
     addDataPoint(lon, lat, value) {
         const [u, v] = this._lonLatToUV(lon, lat);
-        let x = Math.floor(u * this.resolution[0]);
+        let x = Math.round(u * this.resolution[0]);
         x = x > this.resolution[0] / 2 ? x - this.resolution[0] / 2 : x + this.resolution[0] / 2;
         const y = Math.floor(v * this.resolution[1]);
         const idx = y * this.resolution[0] + x;
@@ -190,7 +189,11 @@ class TemperatureTextureGenerator {
         // 填充像素（单通道R）
         for (let i = 0; i < this.grid.length; i++) {
             const val = this.grid[i];
-            const normVal = !!val ? normalize(val) : null;
+            if (val === Infinity) {
+                imageData.data[i * 4 + 3] = 255;                   // Alpha通道
+                continue;
+            }
+            const normVal = normalize(val) + 0.1;
             imageData.data[i * 4] = Math.floor(normVal * 255); // R通道
             imageData.data[i * 4 + 3] = 255;                   // Alpha通道
         }
@@ -209,8 +212,6 @@ export default function rectangleRender(viewer, data, header, updateLegendData) 
     const width = textureWidth;
     const height = textureHeight;
 
-    console.log(latRange, lonRange);
-
     // 将颜色数组转换为以摄氏度为单位的颜色映射
     const colors = generateColorArray(min, max).map(item => [item[0], 'rgba(' + item[1].join(',') + ')']);
 
@@ -221,7 +222,6 @@ export default function rectangleRender(viewer, data, header, updateLegendData) 
         resolution: [width, height],
         dataRange: [min, max],     // u_range: 温度实际范围10~40℃
         colorRange: [color.colorRange[0], color.colorRange[1]],    // u_color_range: 颜色映射15~35℃
-        lonRange: lonRange,
         latRange: latRange,
     });
 
@@ -254,16 +254,16 @@ export default function rectangleRender(viewer, data, header, updateLegendData) 
                 u_image_res: new Cesium.Cartesian2(width, height),
                 u_range: new Cesium.Cartesian2(min, max), // 数据范围,
                 u_color_range: new Cesium.Cartesian2(color.colorRange[0], color.colorRange[1]), // 颜色范围
-                image: tempCanvas.toDataURL(),
+                u_image: tempCanvas.toDataURL(),
                 color_ramp: color.canvas, // 颜色纹理
             },
             source: sourceShader
-        }
+        },
     });
     const rectangleInstance = new Cesium.GeometryInstance({
         geometry: new Cesium.RectangleGeometry({
             ellipsoid: Cesium.Ellipsoid.WGS84,
-            rectangle: Cesium.Rectangle.fromDegrees(lonRange[0] - 180, latRange[0], lonRange[1] - 180, latRange[1]),
+            rectangle: Cesium.Rectangle.fromDegrees(-180, latRange[0], 180, latRange[1]),
             vertexFormat: Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
         }),
     });
@@ -274,13 +274,15 @@ export default function rectangleRender(viewer, data, header, updateLegendData) 
         geometryInstances: [rectangleInstance],
         appearance: new Cesium.EllipsoidSurfaceAppearance({
             material: material,
-            aboveGround: true
-        })
+            aboveGround: true,
+            translucent: true,
+        }),
+        asynchronous: false,
     });
 
     // 将 Primitive 添加到场景中
     scene.primitives.add(primitives);
-
+    // viewer.scene.globe.material = material;
     updateLegendData({min, max, colors: color.canvas.toDataURL()})
 
     return {
