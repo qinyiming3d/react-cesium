@@ -7,6 +7,8 @@ uniform vec2 u_range;
 // 颜色范围，表示颜色映射的最小值和最大值
 uniform vec2 u_color_range;
 
+uniform sampler2D u_image;
+
 // 从纹理中获取指定 UV 坐标的红色通道值
 float calcTexture(sampler2D tex, const vec2 uv) {
     return texture(tex, uv).r;
@@ -41,7 +43,7 @@ czm_material czm_getMaterial(czm_materialInput materialInput) {
     czm_material material = czm_getDefaultMaterial(materialInput); // 初始化默认材质
 
     // 根据 UV 坐标获取数据值
-    float value = getValue(image, materialInput.st);
+    float value = getValue(u_image, materialInput.st);
 
     // 将数据值映射到颜色范围 [0, 1]
     float value_t = (value - u_color_range.x) / (u_color_range.y - u_color_range.x);
@@ -58,7 +60,7 @@ czm_material czm_getMaterial(czm_materialInput materialInput) {
     material.alpha = color.a;
 
 
-    if(!bool(calcTexture(image, materialInput.st))){
+    if(!bool(calcTexture(u_image, materialInput.st))){
         material.alpha = 0.0;
     }
 

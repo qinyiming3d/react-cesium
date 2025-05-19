@@ -159,7 +159,7 @@
       },
       {
         "name": "renderMode",
-        "value": "rectangleRender"
+        "value": "waterRender"
       }
     ]
   }
