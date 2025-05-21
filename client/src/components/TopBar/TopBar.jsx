@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { DownOutlined, UpOutlined, TranslationOutlined, MenuOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import styles from './index.module.scss';
+import { useNavigate } from 'react-router-dom';
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
@@ -16,6 +17,7 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
   const [selectedItem, setSelectedItem] = useState(null);
   const { token } = useToken();
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     i18n.changeLanguage(currentLanguage);
@@ -23,13 +25,10 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
 
   const scalarItems = [
     { key: 'nc', label: <Link to="/scalar/ncFile">{t('ncFile')}</Link> },
-    { key: 'salinity', label: <Link to="/scalar/salinity">{t('salinity')}</Link> },
-    { key: 'density', label: <Link to="/scalar/density">{t('density')}</Link> },
   ];
 
   const vectorItems = [
-    { key: 'velocity', label: <Link to="/vector/velocity">{t('velocity')}</Link> },
-    { key: 'direction', label: <Link to="/vector/direction">{t('direction')}</Link> },
+    { key: 'nc', label: <Link to="/vector/ncFile">{t('ncFile')}</Link> },
   ];
 
 
@@ -53,7 +52,7 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
             >
               <div className={styles.mobileMenu}>
                 <Dropdown
-                  menu={{ 
+                  menu={{
                     items: scalarItems,
                     selectedKeys: selectedItem?.type === 'scalar' ? [selectedItem.key] : [],
                     onClick: (e) => {
@@ -69,7 +68,7 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
                 </Dropdown>
 
                 <Dropdown
-                  menu={{ 
+                  menu={{
                     items: vectorItems,
                     selectedKeys: selectedItem?.type === 'vector' ? [selectedItem.key] : [],
                     onClick: (e) => {
@@ -150,8 +149,8 @@ const TopBar = ({ onThemeChange, isDarkTheme, currentLanguage, onChangeLanguage,
           </>
         )}
 
-        <Title level={3} className={styles.title}>
-          {t('title')}
+        <Title level={3} className={styles.title} onClick={() => navigate('/')}>
+            {t('title')}
         </Title>
 
         {!isMobile && (

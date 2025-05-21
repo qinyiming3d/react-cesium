@@ -9,25 +9,17 @@ import DirectionPage from './pages/DirectionPage';
 const routes = [
   {
     path: '/scalar',
+    element: <NcFilePage />,
     children: [
       { path: 'ncFile', element: <NcFilePage /> },
-      { path: 'salinity', element: <SalinityPage /> },
-      { path: 'density', element: <DensityPage /> },
-      { path: '', element: <ScalarPage /> }
     ]
   },
   {
     path: '/vector',
     children: [
-      { path: 'velocity', element: <VelocityPage /> },
-      { path: 'direction', element: <DirectionPage /> },
-      { path: '', element: <VectorPage /> }
+      { path: 'ncFile', element: <VelocityPage /> },
     ]
   },
-  { 
-    path: '*',
-    element: <ScalarPage />
-  }
 ];
 
 export default routes;

@@ -1,9 +1,9 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext, useRef} from 'react';
 import {Button, message, Upload, Card, theme, Modal, Form, Select, Progress, Spin} from 'antd';
 import EmptyState from '@components/EmptyState/EmptyState';
 import {useTranslation} from 'react-i18next';
 import DataStructureViewer from '@components/DataStructureViewer/DataStructureViewer';
-import {vectorController, scalarController} from '@_public/apis/index.js';
+import {scalarController} from '@_public/apis/index.js';
 import pointRender from './renderMode/pointRender.js';
 import cylinderRender from './renderMode/cylinderRender.js';
 import lineRender from './renderMode/lineRender.js';
@@ -13,12 +13,13 @@ import {Cartesian3} from 'cesium';
 import rectangleRender from "@pages/ncFilePage/renderMode/rectangleRender.js";
 import waterRender from "@pages/ncFilePage/renderMode/waterRender.js";
 import Legend from "@components/Legend/Legend.jsx";
+import ViewerContext from '../../viewContext.js';
 
 const {useToken} = theme;
 const {Option} = Select;
 const isGenerateUV = (renderMode) => ['rectangleRender', 'waterRender'].includes(renderMode)
 
-const NcFilePage = ({viewer, isMobile}) => {
+const NcFilePage = () => {
     const {t} = useTranslation();
     const {token} = useToken();
     const [file, setFile] = useState(null);
@@ -35,6 +36,9 @@ const NcFilePage = ({viewer, isMobile}) => {
     const [renderInfo, setRenderInfo] = useState(null);
     const [legendData, setLegendData] = useState(null);
     const [fileName, setFileName] = useState('');
+    const renderUnit = useRef(null); // 渲染结果
+    const [isStructureModalOpen, setIsStructureModalOpen] = useState(false); // 表格显隐
+    const [uvOpen, setUvOpen] = useState(false); // uv图显隐
 
     const [presetFiles, setPresetFiles] = useState([
         {name: '温度场nc数据', path: '/data/temperature.json'},
@@ -42,6 +46,8 @@ const NcFilePage = ({viewer, isMobile}) => {
         {name: '盐度场数据', path: '/data/salinity.json'},
     ]);
     const [selectedPreset, setSelectedPreset] = useState(null);
+
+    const viewer = useContext(ViewerContext);
 
     const renderMethods = {
         point: pointRender, // 点渲染
@@ -55,13 +61,9 @@ const NcFilePage = ({viewer, isMobile}) => {
     useEffect(() => {
         return () => {
             messageApi.destroy();
-            clearHeatmap();
+            clearRenderUnit();
         }
     }, [])
-
-    const [renderUnit, setRenderUnit] = useState(null); // 渲染结果
-    const [isStructureModalOpen, setIsStructureModalOpen] = useState(false); // 表格显隐
-    const [uvOpen, setUvOpen] = useState(false); // uv图显隐
 
     const handlePresetSelect = async (value) => {
         const preset = presetFiles.find((file) => file.name === value);
@@ -130,18 +132,17 @@ const NcFilePage = ({viewer, isMobile}) => {
 
             const res = await scalarController.getGridData(filePath, JSON.stringify(params));
 
-            clearHeatmap();
+            clearRenderUnit();
 
 
             setRenderInfo({...res.data.header})
 
             await scalarController.getGridData(filePath, JSON.stringify(params));
 
-            clearHeatmap();
+            clearRenderUnit();
             setRenderInfo({...res.data.header});
 
-            const renderResult = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header, updateLegendData);
-            setRenderUnit(renderResult);
+            renderUnit.current = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header, updateLegendData);
 
             messageApi.success('渲染成功');
         } catch (error) {
@@ -158,10 +159,9 @@ const NcFilePage = ({viewer, isMobile}) => {
     };
 
     // 清除热力图
-    const clearHeatmap = () => {
-        if (viewer && renderUnit) {
-            renderUnit.dispose();
-            setRenderUnit(null);
+    const clearRenderUnit = () => {
+        if (viewer && renderUnit.current) {
+            renderUnit.current.dispose();
             setRenderInfo(null);
             setLegendData(null);
         }
@@ -237,7 +237,7 @@ const NcFilePage = ({viewer, isMobile}) => {
                             <Button
                                 onClick={() => setUvOpen(true)}
                                 className={styles.actionButton}
-                                disabled={!renderUnit || !isGenerateUV(form.getFieldValue('renderMode'))}
+                                disabled={!renderUnit.current || !isGenerateUV(form.getFieldValue('renderMode'))}
                             >
                                 查看uv图
                             </Button>
@@ -299,7 +299,7 @@ const NcFilePage = ({viewer, isMobile}) => {
                                 确认
                             </Button>
 
-                            <Button onClick={clearHeatmap}
+                            <Button onClick={clearRenderUnit}
                                     className={styles.actionButton}>{t('temperaturePage.actions.clearHeatmap')}</Button>
                         </Form>)}
 
@@ -354,7 +354,7 @@ const NcFilePage = ({viewer, isMobile}) => {
                 wrapClassName={styles.modalWrap}
                 centered
             >
-                <img src={renderUnit?.uv} style={{display: 'block', margin: '0 auto', maxWidth: '100%'}}/>
+                <img src={renderUnit.current?.uv} style={{display: 'block', margin: '0 auto', maxWidth: '100%'}}/>
             </Modal>
         </div>
 

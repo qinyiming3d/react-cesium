@@ -1,26 +1,21 @@
 import {
     Viewer,
-    SkyBox,
     Ion,
     ScreenSpaceEventHandler,
     Cartographic,
     ScreenSpaceEventType,
     Math as cesiumMath,
-    ImageryLayer,
-    WebMapTileServiceImageryProvider,
     createWorldTerrainAsync
 } from 'cesium';
-import {useEffect, useState} from "react";
+import {useEffect, useState, createContext} from "react";
 import {useRoutes} from 'react-router-dom';
 import routes from './routes';
 
 import TopBar from './components/TopBar/TopBar';
-import {VolumePrimitive} from './volumePrimitive';
-import {createVolumeTexture} from './glUtils';
 import {Upload, Button, message, ConfigProvider, theme} from 'antd';
-import {UploadOutlined} from '@ant-design/icons';
 import styles from './App.module.scss';
 import NcFilePage from './pages/ncFilePage/ncFilePage';
+import ViewerContext from './viewContext';
 
 const App = () => {
     const [viewerState, setViewer] = useState(null);
@@ -163,31 +158,22 @@ const App = () => {
     };
 
     return (
-        <ConfigProvider theme={currentTheme}>
-            <div className={styles.visualizationContainer}>
-                <TopBar
-                    isDarkTheme={isDarkTheme}
-                    onThemeChange={handleThemeChange}
-                    currentLanguage={currentLanguage}
-                    onChangeLanguage={changeLanguage}
-                    isMobile={isMobile}
-                />
-                <div id="cesiumContainer" className={styles.cesiumContainer}/>
-                {/* {useRoutes(routes)} */}
-                <NcFilePage viewer={viewerState} isMobile/>
-            </div>
-
-            {/* <div className="control-panel">
-        <button onClick={() => showVectorField()}>显示矢量场</button>
-        <Upload
-          // beforeUpload={handleUpload}
-          accept=".nc"
-          showUploadList={false}
-        >
-          <Button icon={<UploadOutlined />}>标量nc数据上传</Button>
-        </Upload>
-      </div> */}
-        </ConfigProvider>
+        <ViewerContext value={viewerState}>
+            <ConfigProvider theme={currentTheme}>
+                <div className={styles.visualizationContainer}>
+                    <TopBar
+                        isDarkTheme={isDarkTheme}
+                        onThemeChange={handleThemeChange}
+                        currentLanguage={currentLanguage}
+                        onChangeLanguage={changeLanguage}
+                        isMobile={isMobile}
+                    />
+                    <div id="cesiumContainer" className={styles.cesiumContainer}/>
+                     {useRoutes(routes)}
+                    {/*<NcFilePage viewer={viewerState} isMobile/>*/}
+                </div>
+            </ConfigProvider>
+        </ViewerContext>
     );
 }
 
