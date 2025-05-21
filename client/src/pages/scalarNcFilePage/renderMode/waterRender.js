@@ -11,7 +11,7 @@ import {
 import sourceShader from './shader/waterShader/sourceShader.glsl';
 import fragmentShader from './shader/waterShader/fragmentShaderSource.glsl';
 import vertexShader from './shader/waterShader/vertexShaderSource.glsl';
-import GeneratorTexture from "@pages/ncFilePage/renderMode/GeneratorTexture.js";
+import GeneratorTexture from "@pages/scalarNcFilePage/renderMode/GeneratorTexture.js";
 
 
 // 渲染矩形区域

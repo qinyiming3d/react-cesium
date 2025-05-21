@@ -6,8 +6,8 @@ const multer = require('multer');
 const {createServer} = require('http');
 const ncFileHandler = require('./scalar/ncFileHandler');
 const vectorHandler = require('./vector/vectorHandler');
-const util = require('./scalar/util');
-
+const scalarUtil = require('./scalar/util');
+const vectorUtil = require('./vector/util');
 
 const app = express();
 const httpServer = createServer(app);
@@ -18,13 +18,28 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
+const vectorUploadDir = path.join(__dirname, 'vector', 'temp_files');
+
 // 配置multer
 const upload = multer({
     dest: uploadDir,
-    limits: {
-        fileSize: 100 * 1024 * 1024 // 限制100MB
-    },
+    fileFilter: (req, file, cb) => {
+        // 验证文件类型
+        const isNCFile = file.mimetype === 'application/x-netcdf' ||
+            path.extname(file.originalname).toLowerCase() === '.nc';
 
+        if (!isNCFile) {
+            const error = new Error('只支持.nc文件上传');
+            error.code = 'INVALID_FILE_TYPE';
+            return cb(error, false);
+        }
+
+        cb(null, true);
+    }
+});
+
+const vectorUpload = multer({
+    dest: vectorUploadDir,
     fileFilter: (req, file, cb) => {
         // 验证文件类型
         const isNCFile = file.mimetype === 'application/x-netcdf' ||
@@ -50,10 +65,10 @@ app.get('/', (req, res) => {
 });
 
 // 标量场数据路由
-app.post('/api/ncFileHandler', upload.single('file'), ncFileHandler);
+app.post('/api/scalarNcFileHandler', upload.single('file'), ncFileHandler);
 
-// 获取网格数据路由
-app.get('/api/getGridData', async (req, res) => {
+// 获取标量场网格数据路由
+app.get('/api/getScalarGridData', async (req, res) => {
     try {
         let {filePath, params} = req.query;
 
@@ -73,7 +88,7 @@ app.get('/api/getGridData', async (req, res) => {
             return res.status(400).json({error: 'params参数格式不正确'});
         }
 
-        let {resultArr: sampledData, dataInfo} = util.getTemperatureData(filePath, parsedParams);
+        let {resultArr: sampledData, dataInfo} = scalarUtil.getTemperatureData(filePath, parsedParams);
 
         // 点渲染逻辑 - 根据温度范围从白到红渐变
         const temps = sampledData.map(item => item[2]);
@@ -112,7 +127,66 @@ app.get('/api/getGridData', async (req, res) => {
 });
 
 // 矢量场数据路由
-app.post('/api/vectorData', upload.single('file'), vectorHandler);
+app.post('/api/vectorNcFileHandler', vectorUpload.single('file'), vectorHandler);
+
+// 获取矢量场网格数据路由
+app.get('/api/getVectorGridData', async (req, res) => {
+    try {
+        let {filePath, params} = req.query;
+
+        if (!filePath) {
+            return res.status(400).json({error: '缺少filePath参数'});
+        }
+
+        if (filePath.includes('qinyimingOwner')) {
+            filePath = path.resolve(__dirname, 'scalar', 'forever_files', path.basename(filePath));
+        }
+
+        // 解析params参数
+        let parsedParams = {};
+        try {
+            parsedParams = params ? JSON.parse(params) : {};
+        } catch (e) {
+            return res.status(400).json({error: 'params参数格式不正确'});
+        }
+
+        let {resultArr: sampledData, dataInfo} = vectorUtil.getTemperatureData(filePath, parsedParams);
+
+        // 点渲染逻辑 - 根据温度范围从白到红渐变
+        const temps = sampledData.map(item => item[2]);
+        const min = Math.min(...temps);
+        const max = Math.max(...temps);
+
+        const renderPointsLength = sampledData.length;
+
+        res.json({
+            status: 'success',
+            data: {
+                header: {
+                    min,
+                    max,
+                    sampleRate: dataInfo.sampleRate,
+                    originLength: dataInfo.originLength,
+                    renderPointsLength,
+                    lonDistance: dataInfo.lonDistance,
+                    latDistance: dataInfo.latDistance,
+                    textureWidth: dataInfo.textureWidth,
+                    textureHeight: dataInfo.textureHeight,
+                    latRange: dataInfo.latRange,
+                    lonRange: dataInfo.lonRange,
+                },
+                sampledData
+            }
+        });
+
+    } catch (error) {
+        console.error('获取网格数据时出错:', error);
+        res.status(500).json({
+            status: 'error',
+            error: '获取网格数据时出错: ' + error.message
+        });
+    }
+});
 
 // 启动服务器
 const PORT = process.env.PORT || 3001;

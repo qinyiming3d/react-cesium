@@ -74,7 +74,7 @@ const resources = {
         },
         actions: {
           title: '数据操作',
-          clearHeatmap: '清除热力图',
+          clearHeatmap: '清除',
           viewStructure: '查看数据结构'
         },
         rendering: {

@@ -3,7 +3,7 @@ import {
     Primitive,
 } from 'cesium'
 import sourceShader from './shader/rectangleSorceShader.glsl'
-import GeneratorTexture from "@pages/ncFilePage/renderMode/GeneratorTexture.js";
+import GeneratorTexture from "@pages/scalarNcFilePage/renderMode/GeneratorTexture.js";
 
 // 定义颜色带数组，每个元素包含温度值和对应的 RGBA 颜色值
 function generateColorArray(minTemp, maxTemp) {

@@ -5,7 +5,7 @@ export const getHeaderByNc = (file, onUploadProgress) => {
     formData.append('file', file);
 
     return request.post({
-        url: '/api/ncFileHandler',
+        url: '/api/scalarNcFileHandler',
         data: formData,
         headers: {
             'Content-Type': 'multipart/form-data',
@@ -39,7 +39,7 @@ export const getHeaderByNc = (file, onUploadProgress) => {
 
 export const getGridData = (filePath, params) => {
     return request.get({
-        url: '/api/getGridData',
+        url: '/api/getScalarGridData',
         params: {
             filePath,
             params

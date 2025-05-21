@@ -14,7 +14,6 @@ import routes from './routes';
 import TopBar from './components/TopBar/TopBar';
 import {Upload, Button, message, ConfigProvider, theme} from 'antd';
 import styles from './App.module.scss';
-import NcFilePage from './pages/ncFilePage/ncFilePage';
 import ViewerContext from './viewContext';
 
 const App = () => {
@@ -170,7 +169,6 @@ const App = () => {
                     />
                     <div id="cesiumContainer" className={styles.cesiumContainer}/>
                      {useRoutes(routes)}
-                    {/*<NcFilePage viewer={viewerState} isMobile/>*/}
                 </div>
             </ConfigProvider>
         </ViewerContext>

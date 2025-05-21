@@ -1,23 +1,19 @@
-import ScalarPage from './pages/ScalarPage';
-import NcFilePage from './pages/ncFilePage/ncFilePage';
-import SalinityPage from './pages/SalinityPage';
-import DensityPage from './pages/DensityPage';
-import VectorPage from './pages/VectorPage';
-import VelocityPage from './pages/VelocityPage';
-import DirectionPage from './pages/DirectionPage';
+import ScalarNcFilePage from '@pages/scalarNcFilePage/ScalarNcFilePage.jsx';
+import VectorNcFilePage from '@pages/vectorNcFilePage/VectorNcFilePage.jsx';
+
 
 const routes = [
   {
     path: '/scalar',
-    element: <NcFilePage />,
+    element: <ScalarNcFilePage />,
     children: [
-      { path: 'ncFile', element: <NcFilePage /> },
+      { path: 'ncFile', element: <ScalarNcFilePage /> },
     ]
   },
   {
     path: '/vector',
     children: [
-      { path: 'ncFile', element: <VelocityPage /> },
+      { path: 'ncFile', element: <VectorNcFilePage /> },
     ]
   },
 ];

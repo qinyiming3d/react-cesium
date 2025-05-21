@@ -6,12 +6,12 @@ import DataStructureViewer from '@components/DataStructureViewer/DataStructureVi
 import {scalarController} from '@_public/apis/index.js';
 import pointRender from './renderMode/pointRender.js';
 import cylinderRender from './renderMode/cylinderRender.js';
-import lineRender from './renderMode/lineRender.js';
+// import lineRender from './renderMode/lineRender.js';
 import shaderRender from "./renderMode/shaderRender.js";
 import styles from './index.module.scss';
 import {Cartesian3} from 'cesium';
-import rectangleRender from "@pages/ncFilePage/renderMode/rectangleRender.js";
-import waterRender from "@pages/ncFilePage/renderMode/waterRender.js";
+import rectangleRender from "@pages/scalarNcFilePage/renderMode/rectangleRender.js";
+import waterRender from "@pages/scalarNcFilePage/renderMode/waterRender.js";
 import Legend from "@components/Legend/Legend.jsx";
 import ViewerContext from '../../viewContext.js';
 
@@ -19,7 +19,7 @@ const {useToken} = theme;
 const {Option} = Select;
 const isGenerateUV = (renderMode) => ['rectangleRender', 'waterRender'].includes(renderMode)
 
-const NcFilePage = () => {
+const ScalarNcFilePage = () => {
     const {t} = useTranslation();
     const {token} = useToken();
     const [file, setFile] = useState(null);
@@ -52,7 +52,7 @@ const NcFilePage = () => {
     const renderMethods = {
         point: pointRender, // 点渲染
         column: cylinderRender, // 柱渲染
-        contour: lineRender, // 等值线渲染
+        // contour: lineRender, // 等值线渲染
         shader: shaderRender, // shader渲染
         rectangleRender: rectangleRender, // 矩形渲染
         waterRender: waterRender, // 水面渲染
@@ -137,7 +137,6 @@ const NcFilePage = () => {
 
             setRenderInfo({...res.data.header})
 
-            await scalarController.getGridData(filePath, JSON.stringify(params));
 
             clearRenderUnit();
             setRenderInfo({...res.data.header});
@@ -362,5 +361,5 @@ const NcFilePage = () => {
 };
 
 
-export default NcFilePage;
+export default ScalarNcFilePage;
 
