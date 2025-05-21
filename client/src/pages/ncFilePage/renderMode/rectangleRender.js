@@ -165,20 +165,6 @@ export default function rectangleRender(viewer, data, header, updateLegendData) 
 
     const tempCanvas = textureGen.generate();
 
-    const dataUrl = tempCanvas.toDataURL(); // 默认生成PNG格式
-    const imgElement = document.createElement('img');
-    imgElement.src = dataUrl;
-    Object.assign(imgElement.style, {
-        display: 'block',                     // 块级元素
-        margin: '20px auto',                  // 居中布局
-        border: '2px solid #e0e0e0',          // 边框
-        borderRadius: '8px',                  // 圆角
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)', // 阴影
-        imageRendering: 'crisp-edges'         // 缩放模式 (auto/crisp-edges/pixelated)
-    });
-
-    // document.body.appendChild(imgElement);
-
 
     const material = new Cesium.Material({
         fabric: {
@@ -223,7 +209,8 @@ export default function rectangleRender(viewer, data, header, updateLegendData) 
         dispose: () => {
             // 提供清理函数以移除 Primitive
             viewer.scene.primitives.remove(primitives);
-        }
+        },
+        uv: tempCanvas.toDataURL(),
     }
 }
 

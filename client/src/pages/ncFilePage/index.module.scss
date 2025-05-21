@@ -3,6 +3,8 @@
   --card-gap: 16px;
   --top-position: 80px;
   --side-margin: 20px;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .leftContainer {
@@ -31,6 +33,9 @@
 
 .fileName {
   margin-top: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .uploadButton {
@@ -61,4 +66,73 @@
 
 .presetSelect {
   margin-left: 15px;
+}
+
+@media (max-width: 900px) {
+  //.container {
+  //  display: flex;
+  //  flex-direction: column;
+  //  align-items: center;
+  //  padding: 10px;
+  //}
+
+  .leftContainer {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%);
+
+    .flex {
+      flex-direction: column;
+    }
+
+
+    * {
+      font-size: 0.8rem !important;
+    }
+
+    .card {
+      width: 40%;
+      pointer-events: all;
+      height: fit-content;
+      max-height: 80vh;
+      overflow: auto;
+    }
+
+    .flex {
+      display: flex;
+    }
+  }
+
+  .rightContainer {
+    display: none; // 隐藏右侧容器
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .presetSelect {
+    margin-left: 0;
+    width: 100%;
+    margin-top: var(--card-gap);
+  }
+
+  .uploadButton,
+  .confirmButton {
+    width: 100%;
+  }
+
+  .actionButton {
+    margin-left: 0;
+    width: 100%;
+    margin-top: var(--card-gap);
+  }
+
+  .uploadContainer {
+    margin-top: 10px;
+  }
 }

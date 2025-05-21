@@ -35,9 +35,6 @@ export default function waterRender(viewer, data, header, updateLegendData) {
         textureGen.addDataPoint(lon, lat, temp);
     });
 
-
-    const tempCanvas = textureGen.generate();
-
     const material = new Material({
         fabric: {
             uniforms: {
@@ -92,6 +89,7 @@ export default function waterRender(viewer, data, header, updateLegendData) {
         dispose: () => {
             // 提供清理函数以移除 Primitive
             viewer.scene.primitives.remove(primitives);
-        }
+        },
+        uv: textureGen.generate().toDataURL(),
     }
 }

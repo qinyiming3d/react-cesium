@@ -16,6 +16,7 @@ import Legend from "@components/Legend/Legend.jsx";
 
 const {useToken} = theme;
 const {Option} = Select;
+const isGenerateUV = (renderMode) => ['rectangleRender', 'waterRender'].includes(renderMode)
 
 const NcFilePage = ({viewer, isMobile}) => {
     const {t} = useTranslation();
@@ -33,6 +34,7 @@ const NcFilePage = ({viewer, isMobile}) => {
     });
     const [renderInfo, setRenderInfo] = useState(null);
     const [legendData, setLegendData] = useState(null);
+    const [fileName, setFileName] = useState('');
 
     const [presetFiles, setPresetFiles] = useState([
         {name: '温度场nc数据', path: '/data/temperature.json'},
@@ -57,8 +59,9 @@ const NcFilePage = ({viewer, isMobile}) => {
         }
     }, [])
 
-    const [renderUnit, setRenderUnit] = useState(null); // entity实例
-    const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
+    const [renderUnit, setRenderUnit] = useState(null); // 渲染结果
+    const [isStructureModalOpen, setIsStructureModalOpen] = useState(false); // 表格显隐
+    const [uvOpen, setUvOpen] = useState(false); // uv图显隐
 
     const handlePresetSelect = async (value) => {
         const preset = presetFiles.find((file) => file.name === value);
@@ -67,6 +70,7 @@ const NcFilePage = ({viewer, isMobile}) => {
         setVariables(res.data.header.variables || []);
         setFilePath(res.data.filePath);
         setHeader(res.data.header);
+        setFileName(res.data.filePath)
         form?.setFields(res.data.selectOption);
     };
 
@@ -89,6 +93,9 @@ const NcFilePage = ({viewer, isMobile}) => {
                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                 setUploadProgress(percentCompleted);
             });
+            if (res.status !== "success") {
+                throw new Error(res.error)
+            }
             messageApi.success('上传成功');
             setVariables(res.data.header.variables || []);
             setFilePath(res.data.filePath);
@@ -96,7 +103,7 @@ const NcFilePage = ({viewer, isMobile}) => {
             form?.resetFields();
             setSelectedPreset(null);
         } catch (error) {
-            messageApi.error('上传失败');
+            messageApi.error('数据处理失败, 请上传NetCDF v3.x文件', error);
         } finally {
             setUploading(false);
         }
@@ -118,7 +125,7 @@ const NcFilePage = ({viewer, isMobile}) => {
                 lat: values.lat,
                 z: values.z,
                 f: values.f,
-                isSample: !(['rectangleRender', 'waterRender'].includes(renderMode))
+                isSample: !(isGenerateUV(renderMode)),
             };
 
             const res = await scalarController.getGridData(filePath, JSON.stringify(params));
@@ -146,6 +153,7 @@ const NcFilePage = ({viewer, isMobile}) => {
 
     const beforeUpload = (file) => {
         setFile(file);
+        setFileName(file.name);
         return false; // 阻止自动上传
     };
 
@@ -205,7 +213,7 @@ const NcFilePage = ({viewer, isMobile}) => {
                             </div>
 
                             {/* 文件名 */}
-                            <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {file?.name}</p>
+                            <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {fileName}</p>
                             {/* 上传文件 */}
                             <Button
                                 type="primary"
@@ -216,13 +224,22 @@ const NcFilePage = ({viewer, isMobile}) => {
                             >
                                 {t('temperaturePage.upload.uploadButton')}
                             </Button>
-
+                            {/* 查看数据结构 */}
                             <Button
                                 onClick={() => setIsStructureModalOpen(true)}
                                 className={styles.actionButton}
                                 disabled={!header}
                             >
                                 {t('temperaturePage.actions.viewStructure')}
+                            </Button>
+
+                            {/* 查看uv图 */}
+                            <Button
+                                onClick={() => setUvOpen(true)}
+                                className={styles.actionButton}
+                                disabled={!renderUnit || !isGenerateUV(form.getFieldValue('renderMode'))}
+                            >
+                                查看uv图
                             </Button>
                         </>
                     }
@@ -322,11 +339,22 @@ const NcFilePage = ({viewer, isMobile}) => {
                 footer={null}
                 width="80%"
                 wrapClassName={styles.modalWrap}
-
             >
                 <DataStructureViewer
                     data={header}
                 />
+            </Modal>
+
+            {/* uv图模态框 */}
+            <Modal
+                open={uvOpen}
+                onCancel={() => setUvOpen(false)}
+                footer={null}
+                width="80%"
+                wrapClassName={styles.modalWrap}
+                centered
+            >
+                <img src={renderUnit?.uv} style={{display: 'block', margin: '0 auto', maxWidth: '100%'}}/>
             </Modal>
         </div>
 
