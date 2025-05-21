@@ -1,3 +1,8 @@
 http://msdc.qdio.ac.cn/data/metadata-special-detail?id=1456577680076988418&cnId=1456577680076988418&enId=null
 
+高度：httpmsdc.qdio.ac.cndatametadata-special-detailid=1872507935670759425&otherId=1872507935683342337（不可用）
+风： http://msdc.qdio.ac.cn/data/metadata-special-detail?id=1736408097611694082&otherId=1736408097796243457（不可用）
+二氧化碳分压：http://msdc.qdio.ac.cn/data/metadata-special-detail?id=1409804482887303170&otherId=1409813943244832769
+盐度： http://msdc.qdio.ac.cn/data/metadata-special-detail?id=1456516931682066433&otherId=1456516931803701249
+
 数据由中国科学院海洋研究所海洋科学大数据中心提供
