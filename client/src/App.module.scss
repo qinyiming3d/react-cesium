@@ -2,6 +2,7 @@
   display: flex;
   width: 100vw;
   height: 100vh;
+  position: relative;
 
   .cesiumContainer {
     flex: 1;
@@ -12,11 +13,18 @@
 }
 
 :global(.cesium-performanceDisplay) {
-  margin-top: 80px;
+  position: absolute;
+  z-index: 100;
+  right: 45px;
+  top: -37px;
+  white-space: nowrap;
 }
 
 :global(.cesium-viewer-toolbar) {
-  top: 85px;
+  //top: 85px;
+  right: 10px;
+  top: 10px;
+  z-index: 100;
 }
 
 .controlPanel {
