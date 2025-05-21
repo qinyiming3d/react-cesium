@@ -2,10 +2,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import cesium from 'vite-plugin-cesium';
 import path from 'path';
+import glsl from 'vite-plugin-glsl';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), cesium()],
+  plugins: [react(), cesium(), glsl()],
   resolve: {
     alias: {
       '@_public': path.resolve(__dirname, './src/_public'),
