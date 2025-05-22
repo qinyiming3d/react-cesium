@@ -16,8 +16,7 @@ import GeneratorTexture from "@pages/scalarNcFilePage/renderMode/GeneratorTextur
 
 // 渲染矩形区域
 export default function waterRender(viewer, data, header, updateLegendData) {
-    const {lonDistance, latDistance, min, max, textureWidth, textureHeight, latRange, lonRange} = header; // 提取头部信息
-    console.log(latRange, lonRange)
+    const {lonDistance, latDistance, min, max, textureWidth, textureHeight, latRange} = header; // 提取头部信息
     const scene = viewer.scene;
 
     const width = textureWidth;

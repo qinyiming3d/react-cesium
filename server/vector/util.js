@@ -25,7 +25,7 @@ const parseNCFile = async (filePath) => {
  * @param {Object} params - 请求参数 {lon, lat, depth_std, temperature}
  * @returns {Array} 二维数组数据
  */
-const getTemperatureData = (filePath, params) => {
+const getVectorNcData = (filePath, params) => {
     const data = readFileSync(filePath);
     const reader = new NetCDFReader(data);
 
@@ -42,10 +42,11 @@ const getTemperatureData = (filePath, params) => {
     //   "2": { name: 'lat', data: [4, 5, 6] },
     //   "3": { name: 'depth', data: [0, 10, 20] },
     // }
-    const indexOrder = reader.variables.find(item => item.name === params.f).dimensions;
+    const indexOrder = reader.variables.find(item => item.name === params.u).dimensions;
     // [3, 2, 1]
-    const f = reader.getDataVariable(params.f);
-    const resultArray = convertTo2DArray(params.lon, params.lat, params.z, f, indexOrder, indexMapping, params.isSample);
+    const u = reader.getDataVariable(params.u).flat();
+    const v = reader.getDataVariable(params.v).flat();
+    const resultArray = convertTo2DArray(params.lon, params.lat, params.z, u, v, indexOrder, indexMapping, params.isSample);
     // for (let i = 0; i < lat.length; i++) {
     //   for (let j = 0; j < lon.length; j++) {
     //     const tempIndex = i * lat.length * depth.length + j * depth.length; // 假设我们关心的是深度为0的数据
@@ -67,7 +68,7 @@ const getTemperatureData = (filePath, params) => {
     return resultArray;
 };
 
-function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSample) {
+function convertTo2DArray(lonName, latName, zName, u, v, index, indexMapping, isSample) {
     const xObject = indexMapping[index[0]];
     xObject.demension = '一维';
     const yObject = indexMapping[index[1]];
@@ -91,7 +92,6 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSam
     // const lonDistance = lonObject.data[1] - lonObject.data[0];
     // const latDistance = latObject.data[1] - latObject.data[0];
     const latRange = [Math.min(...latObject.data), Math.max(...latObject.data)];
-    const lonRange = [Math.min(...lonObject.data), Math.max(...lonObject.data)];
 
     const textureWidth = lonObject.data.length / sampleRate;
     const textureHeight = latObject.data.length / sampleRate;
@@ -105,17 +105,17 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSam
             const lon = lonObject.data[i];
             const lat = latObject.data[j];
             const fIndex = i * strids[lonObject.demension] + j * strids[latObject.demension];
-            resultArr.push([lon, lat, f[fIndex]]);
+            resultArr.push([lon, lat, u[fIndex], v[fIndex]]);
         }
     }
-
     const sampledLons = [...new Set(resultArr.map(item => item[0]))].sort((a, b) => a - b);
     const sampledLats = [...new Set(resultArr.map(item => item[1]))].sort((a, b) => a - b);
     const lonDistance = sampledLons.length > 1 ? sampledLons[1] - sampledLons[0] : 0;
     const latDistance = sampledLats.length > 1 ? sampledLats[1] - sampledLats[0] : 0;
 
-    resultArr = resultArr.filter(item => item[2]);
-
+    console.log(resultArr.length);
+    resultArr = resultArr.filter(item => item[2] && item[3]);
+    console.log(resultArr.length);
     // for (let k = 0; k < heightObject.data.length; k++) {
     //     for (let i = 0; i < lonObject.data.length; i++) {
     //         for (let j = 0; j < latObject.data.length; j++) {
@@ -127,10 +127,10 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSam
     //         }
     //     }
     // }
-    return {resultArr, dataInfo: {lonDistance, latDistance, sampleRate, originLength, textureWidth, textureHeight, latRange, lonRange}};
+    return {resultArr, dataInfo: {lonDistance, latDistance, sampleRate, originLength, textureWidth, textureHeight, latRange}};
 }
 
 module.exports = {
     parseNCFile,
-    getTemperatureData
+    getVectorNcData
 };

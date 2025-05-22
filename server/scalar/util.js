@@ -91,7 +91,6 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSam
     // const lonDistance = lonObject.data[1] - lonObject.data[0];
     // const latDistance = latObject.data[1] - latObject.data[0];
     const latRange = [Math.min(...latObject.data), Math.max(...latObject.data)];
-    const lonRange = [Math.min(...lonObject.data), Math.max(...lonObject.data)];
 
     const textureWidth = lonObject.data.length / sampleRate;
     const textureHeight = latObject.data.length / sampleRate;
@@ -127,7 +126,7 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSam
     //         }
     //     }
     // }
-    return {resultArr, dataInfo: {lonDistance, latDistance, sampleRate, originLength, textureWidth, textureHeight, latRange, lonRange}};
+    return {resultArr, dataInfo: {lonDistance, latDistance, sampleRate, originLength, textureWidth, textureHeight, latRange}};
 }
 
 module.exports = {

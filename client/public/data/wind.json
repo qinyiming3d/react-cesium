@@ -1,0 +1,224 @@
+{
+  "status": "success",
+  "data": {
+    "header": {
+      "version": 2,
+      "dimensions": [
+        {
+          "name": "longitude",
+          "size": 720
+        },
+        {
+          "name": "latitude",
+          "size": 361
+        },
+        {
+          "name": "time",
+          "size": 0
+        }
+      ],
+      "globalAttributes": [
+        {
+          "name": "Conventions",
+          "type": "char",
+          "value": "CF-1.6"
+        },
+        {
+          "name": "history",
+          "type": "char",
+          "value": "2018-04-24 12:10:46 GMT by grib_to_netcdf-2.7.0: grib_to_netcdf /data/data05/scratch/_mars-atls04-98f536083ae965b31b0d04811be6f4c6-A_qhuV.grib -o /data/data04/scratch/_grib2netcdf-atls14-a562cefde8a29a7288fa0b8b7f9413f7-YuXbto.nc -utime"
+        }
+      ],
+      "variables": [
+        {
+          "name": "longitude",
+          "dimensions": [
+            0
+          ],
+          "attributes": [
+            {
+              "name": "units",
+              "type": "char",
+              "value": "degrees_east"
+            },
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "longitude"
+            }
+          ],
+          "type": "float",
+          "size": 2880,
+          "offset": 1252,
+          "record": false
+        },
+        {
+          "name": "latitude",
+          "dimensions": [
+            1
+          ],
+          "attributes": [
+            {
+              "name": "units",
+              "type": "char",
+              "value": "degrees_north"
+            },
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "latitude"
+            }
+          ],
+          "type": "float",
+          "size": 1444,
+          "offset": 4132,
+          "record": false
+        },
+        {
+          "name": "time",
+          "dimensions": [
+            2
+          ],
+          "attributes": [
+            {
+              "name": "units",
+              "type": "char",
+              "value": "hours since 1900-01-01 00:00:0.0"
+            },
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "time"
+            },
+            {
+              "name": "calendar",
+              "type": "char",
+              "value": "gregorian"
+            }
+          ],
+          "type": "int",
+          "size": 4,
+          "offset": 5576,
+          "record": true
+        },
+        {
+          "name": "u10",
+          "dimensions": [
+            2,
+            1,
+            0
+          ],
+          "attributes": [
+            {
+              "name": "scale_factor",
+              "type": "double",
+              "value": 0.0003873652974414638
+            },
+            {
+              "name": "add_offset",
+              "type": "double",
+              "value": -0.34812935922342775
+            },
+            {
+              "name": "_FillValue",
+              "type": "short",
+              "value": -32767
+            },
+            {
+              "name": "missing_value",
+              "type": "short",
+              "value": -32767
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "m s**-1"
+            },
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "10 metre U wind component"
+            }
+          ],
+          "type": "short",
+          "size": 519840,
+          "offset": 5580,
+          "record": true
+        },
+        {
+          "name": "v10",
+          "dimensions": [
+            2,
+            1,
+            0
+          ],
+          "attributes": [
+            {
+              "name": "scale_factor",
+              "type": "double",
+              "value": 0.00040849996774030325
+            },
+            {
+              "name": "add_offset",
+              "type": "double",
+              "value": 1.050563171738542
+            },
+            {
+              "name": "_FillValue",
+              "type": "short",
+              "value": -32767
+            },
+            {
+              "name": "missing_value",
+              "type": "short",
+              "value": -32767
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "m s**-1"
+            },
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "10 metre V wind component"
+            }
+          ],
+          "type": "short",
+          "size": 519840,
+          "offset": 525420,
+          "record": true
+        }
+      ],
+      "recordDimension": {
+        "length": 12,
+        "id": 2,
+        "name": "time",
+        "recordStep": 1039684
+      }
+    },
+    "filePath": "qinyimingOwner/2017.nc",
+    "selectOption": [
+      {
+        "name": "lon",
+        "value": "longitude"
+      },
+      {
+        "name": "lat",
+        "value": "latitude"
+      },
+      {
+        "name": "u",
+        "value": "u10"
+      },
+      {
+        "name": "v",
+        "value": "v10"
+      },
+      {
+        "name": "renderMode",
+        "value": "windPole"
+      }
+    ]
+  }
+}

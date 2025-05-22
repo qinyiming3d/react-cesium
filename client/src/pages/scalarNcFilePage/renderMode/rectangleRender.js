@@ -140,7 +140,7 @@ function createColorTexture(range = [], colors) {
 
 // 渲染矩形区域
 export default function rectangleRender(viewer, data, header, updateLegendData) {
-    const {lonDistance, latDistance, min, max, textureWidth, textureHeight, latRange, lonRange} = header; // 提取头部信息
+    const {lonDistance, latDistance, min, max, textureWidth, textureHeight, latRange} = header; // 提取头部信息
     const scene = viewer.scene;
 
     const width = textureWidth;

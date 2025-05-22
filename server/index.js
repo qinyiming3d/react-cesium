@@ -111,7 +111,6 @@ app.get('/api/getScalarGridData', async (req, res) => {
                     textureWidth: dataInfo.textureWidth,
                     textureHeight: dataInfo.textureHeight,
                     latRange: dataInfo.latRange,
-                    lonRange: dataInfo.lonRange,
                 },
                 sampledData
             }
@@ -139,7 +138,7 @@ app.get('/api/getVectorGridData', async (req, res) => {
         }
 
         if (filePath.includes('qinyimingOwner')) {
-            filePath = path.resolve(__dirname, 'scalar', 'forever_files', path.basename(filePath));
+            filePath = path.resolve(__dirname, 'vector', 'forever_files', path.basename(filePath));
         }
 
         // 解析params参数
@@ -150,12 +149,16 @@ app.get('/api/getVectorGridData', async (req, res) => {
             return res.status(400).json({error: 'params参数格式不正确'});
         }
 
-        let {resultArr: sampledData, dataInfo} = vectorUtil.getTemperatureData(filePath, parsedParams);
+        let {resultArr: sampledData, dataInfo} = vectorUtil.getVectorNcData(filePath, parsedParams);
 
-        // 点渲染逻辑 - 根据温度范围从白到红渐变
-        const temps = sampledData.map(item => item[2]);
-        const min = Math.min(...temps);
-        const max = Math.max(...temps);
+
+        // const u = sampledData.map(item => item[2]);
+        // const v = sampledData.map(item => item[3]);
+        // const uMin = Math.min(...u);
+        // const uMax = Math.max(...u);
+        //
+        // const vMin = Math.min(...v);
+        // const vMax = Math.max(...v);
 
         const renderPointsLength = sampledData.length;
 
@@ -163,8 +166,10 @@ app.get('/api/getVectorGridData', async (req, res) => {
             status: 'success',
             data: {
                 header: {
-                    min,
-                    max,
+                    // uMin,
+                    // uMax,
+                    // vMin,
+                    // vMax,
                     sampleRate: dataInfo.sampleRate,
                     originLength: dataInfo.originLength,
                     renderPointsLength,
@@ -173,7 +178,6 @@ app.get('/api/getVectorGridData', async (req, res) => {
                     textureWidth: dataInfo.textureWidth,
                     textureHeight: dataInfo.textureHeight,
                     latRange: dataInfo.latRange,
-                    lonRange: dataInfo.lonRange,
                 },
                 sampledData
             }

@@ -5,9 +5,9 @@ import {useTranslation} from 'react-i18next';
 import DataStructureViewer from '@components/DataStructureViewer/DataStructureViewer';
 import {vectorController} from '@_public/apis/index.js';
 import styles from './index.module.scss';
-import {Cartesian3} from 'cesium';
 import Legend from "@components/Legend/Legend.jsx";
 import ViewerContext from '../../viewContext.js';
+import windPole from './renderMode/windPole.js'
 
 const {useToken} = theme;
 const {Option} = Select;
@@ -35,9 +35,7 @@ const NcFilePage = () => {
     const [uvOpen, setUvOpen] = useState(false); // uv图显隐
 
     const [presetFiles, setPresetFiles] = useState([
-        {name: '温度场nc数据', path: '/data/temperature.json'},
-        {name: '二氧化碳分压', path: '/data/co2Pressure.json'},
-        {name: '盐度场数据', path: '/data/salinity.json'},
+        {name: '风场nc数据', path: '/data/wind.json'},
     ]);
     const [selectedPreset, setSelectedPreset] = useState(null);
 
@@ -50,6 +48,7 @@ const NcFilePage = () => {
         // shader: shaderRender, // shader渲染
         // rectangleRender: rectangleRender, // 矩形渲染
         // waterRender: waterRender, // 水面渲染
+        windPole: windPole,
     };
 
     useEffect(() => {
@@ -109,7 +108,7 @@ const NcFilePage = () => {
         }
         try {
             seConfirmLoading(true);
-            const renderMode = form.getFieldValue('renderMode') || 'point';
+            const renderMode = form.getFieldValue('renderMode') || 'windPole';
             const params = {
                 lon: values.lon,
                 lat: values.lat,
@@ -282,7 +281,7 @@ const NcFilePage = () => {
 
                             <Form.Item name="renderMode" label="渲染方式" initialValue="rectangleRender">
                                 <Select>
-                                    <Option value="windpole">风杆图</Option>
+                                    <Option value="windPole">风杆图</Option>
                                     <Option value="particleSystem">粒子系统</Option>
                                 </Select>
                             </Form.Item>
