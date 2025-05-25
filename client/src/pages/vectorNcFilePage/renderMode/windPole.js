@@ -4,32 +4,44 @@ import {
     Primitive,
     RectangleGeometry,
     Rectangle,
+    Color,
     EllipsoidSurfaceAppearance,
+    ColorGeometryInstanceAttribute,
     Math as cesiumMath,
 } from 'cesium'
+import windPoleFsShader from './shader/winPole/windPoleFsShader.glsl';
+import windPoleVsShader from './shader/winPole/windPoleVsShader.glsl';
 
 export default function windPoleRender(viewer, data, header) {
     const {lonDistance, latDistance} = header;
     const scene = viewer.scene;
 
     const appearance = new EllipsoidSurfaceAppearance({
-        material: new Material({
-            fabric: {
-                type: "Image",
-                uniforms: {
-                    image: "/arrow.png",
-                },
-            }
+            material: new Material({
+                fabric: {
+                    type: "Image",
+                    uniforms: {
+                        image: "/arrow.png",
+                    },
+                }
+            }),
+            fragmentShaderSource: windPoleFsShader,
+            vertexShaderSource: windPoleVsShader,
+            aboveGround: true,
+        })
+    ;
 
-        }),
-        aboveGround: true,
-    });
+    console.log(appearance.fragmentShaderSource)
 
 
     const instance = [];
     // 遍历 data 动态生成多个 Instance
     data.forEach(item => {
         const [lon, lat, u, v] = item;
+
+        const angle = Math.abs(getAngleFromUV(u, v)); // 计算角度的绝对值
+        const colorIntensity = Math.min(angle / Math.PI, 1.0); // 将角度归一化到 [0, 1]
+        const color = new Color(colorIntensity, colorIntensity, colorIntensity, 1.0); // 角度越大，颜色越白
 
         const rectangle = new RectangleGeometry({
             rectangle: Rectangle.fromDegrees(
@@ -44,10 +56,12 @@ export default function windPoleRender(viewer, data, header) {
         const geometry = RectangleGeometry.createGeometry(rectangle);
         const geometryInstance = new GeometryInstance({
             geometry: geometry,
+            attributes: {
+                color: ColorGeometryInstanceAttribute.fromColor(color), // 设置颜色属性
+            },
         });
 
         instance.push(geometryInstance)
-
     });
 
     const primitives = new Primitive({
