@@ -8,30 +8,51 @@ import {
     EllipsoidSurfaceAppearance,
     ColorGeometryInstanceAttribute,
     Math as cesiumMath,
+    Texture
 } from 'cesium'
 import windPoleFsShader from './shader/winPole/windPoleFsShader.glsl';
 import windPoleVsShader from './shader/winPole/windPoleVsShader.glsl';
+import {createColorTexture} from '@_public/util.js'
 
-export default function windPoleRender(viewer, data, header) {
+export default function windPoleRender(viewer, data, header, updateLegendData) {
     const {lonDistance, latDistance} = header;
     const scene = viewer.scene;
 
-    const appearance = new EllipsoidSurfaceAppearance({
-            material: new Material({
-                fabric: {
-                    type: "Image",
-                    uniforms: {
-                        image: "/arrow.png",
-                    },
-                }
-            }),
-            fragmentShaderSource: windPoleFsShader,
-            vertexShaderSource: windPoleVsShader,
-            aboveGround: true,
-        })
-    ;
+    let maxMagnitude = 0;
+    let minMagnitude = 0;
+    data.forEach(([lon, lat, u, v]) => {
+        maxMagnitude = Math.max(maxMagnitude, Math.sqrt(u * u + v * v));
+        minMagnitude = Math.min(minMagnitude, Math.sqrt(u * u + v * v));
+    })
+    const color = createColorTexture({minValue: minMagnitude, maxValue: maxMagnitude});
+    const ctx = color.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, 256, 1);
+    const colorTexture = new Texture({
+        context: scene.context,
+        source: {
+            arrayBufferView: imageData.data,
+            width: 256,
+            height: 1
+        }
+    });
 
-    console.log(appearance.fragmentShaderSource)
+    const appearance = new EllipsoidSurfaceAppearance({
+        material: new Material({
+            fabric: {
+                type: "Image",
+                uniforms: {
+                    image: "/arrow.png",
+                },
+            }
+        }),
+        fragmentShaderSource: windPoleFsShader,
+        vertexShaderSource: windPoleVsShader,
+        aboveGround: true,
+    });
+
+    appearance.uniforms = {
+        u_colorTexture: colorTexture
+    }
 
 
     const instance = [];
@@ -39,9 +60,8 @@ export default function windPoleRender(viewer, data, header) {
     data.forEach(item => {
         const [lon, lat, u, v] = item;
 
-        const angle = Math.abs(getAngleFromUV(u, v)); // 计算角度的绝对值
-        const colorIntensity = Math.min(angle / Math.PI, 1.0); // 将角度归一化到 [0, 1]
-        const color = new Color(colorIntensity, colorIntensity, colorIntensity, 1.0); // 角度越大，颜色越白
+        const magnitude = Math.sqrt(u * u + v * v);
+        const colorIntensity = Math.min(magnitude / (maxMagnitude - minMagnitude), 1.0); // 将模长归一化到 [0, 1]
 
         const rectangle = new RectangleGeometry({
             rectangle: Rectangle.fromDegrees(
@@ -57,7 +77,8 @@ export default function windPoleRender(viewer, data, header) {
         const geometryInstance = new GeometryInstance({
             geometry: geometry,
             attributes: {
-                color: ColorGeometryInstanceAttribute.fromColor(color), // 设置颜色属性
+                // color: ColorGeometryInstanceAttribute.fromColor(color), // 设置颜色属性
+                color: ColorGeometryInstanceAttribute.fromColor(new Color(colorIntensity, 0.0, 0.0, 0.0)), // 设置颜色属性
             },
         });
 
@@ -71,6 +92,8 @@ export default function windPoleRender(viewer, data, header) {
     })
 
     scene.primitives.add(primitives);
+
+    updateLegendData({min: minMagnitude, max: maxMagnitude, colors: color.canvas.toDataURL()})
 
     return {
         type: 'primitives',

@@ -18,6 +18,5 @@ void main()
     v_positionEC = (czm_modelViewRelativeToEye * p).xyz;     // position in eye coordinates
     v_st = st;
     v_color = color;
-
     gl_Position = czm_modelViewProjectionRelativeToEye * p;
 }

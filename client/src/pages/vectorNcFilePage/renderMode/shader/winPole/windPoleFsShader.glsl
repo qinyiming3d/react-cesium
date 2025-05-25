@@ -3,6 +3,7 @@ in vec3 v_positionEC;
 in vec2 v_st;
 
 in vec4 v_color;
+uniform sampler2D u_colorTexture;
 void main()
 {
     czm_materialInput materialInput;
@@ -26,10 +27,13 @@ void main()
 
     czm_material material = czm_getMaterial(materialInput);
 
+    vec4 color = texture(u_colorTexture, vec2(v_color.r, 0.5));
+
     #ifdef FLAT
     out_FragColor = vec4(material.diffuse + material.emission, material.alpha);
     #else
 //    out_FragColor = czm_phong(normalize(positionToEyeEC), material, czm_lightDirectionEC);
-    out_FragColor = vec4(v_color.rgb, material.alpha);
+//    out_FragColor = vec4(v_color.rgb, material.alpha);
+      out_FragColor = vec4(color.rgb, material.alpha);
     #endif
 }
