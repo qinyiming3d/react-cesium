@@ -286,7 +286,6 @@ const ScalarNcFilePage = () => {
                                 <Select>
                                     <Option value="point">点渲染</Option>
                                     <Option value="column">柱渲染</Option>
-                                    <Option value="contour">等值线渲染</Option>
                                     <Option value="shader">shader渲染</Option>
                                     <Option value="rectangleRender">纹理渲染</Option>
                                     <Option value="waterRender">水面渲染</Option>
