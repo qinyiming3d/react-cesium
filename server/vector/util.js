@@ -25,7 +25,7 @@ const parseNCFile = async (filePath) => {
  * @param {Object} params - 请求参数 {lon, lat, depth_std, temperature}
  * @returns {Array} 二维数组数据
  */
-const getVectorNcData = (filePath, params) => {
+const handleWindPole = (filePath, params, res) => {
     const data = readFileSync(filePath);
     const reader = new NetCDFReader(data);
 
@@ -46,29 +46,117 @@ const getVectorNcData = (filePath, params) => {
     // [3, 2, 1]
     const u = reader.getDataVariable(params.u).flat();
     const v = reader.getDataVariable(params.v).flat();
-    const resultArray = convertTo2DArray(params.lon, params.lat, params.z, u, v, indexOrder, indexMapping, params.isSample);
-    // for (let i = 0; i < lat.length; i++) {
-    //   for (let j = 0; j < lon.length; j++) {
-    //     const tempIndex = i * lat.length * depth.length + j * depth.length; // 假设我们关心的是深度为0的数据
-    //     result.push([lon[j], lat[i], tempData[tempIndex]]);
-    //   }
-    // }
+    const {resultArr: sampledData, dataInfo} = convertTo2DArray(params.lon, params.lat, params.z, u, v, indexOrder, indexMapping, params.isSample);
 
-    // 遍历所有经度、纬度和高度层
-    // for (let lonIndex = 0; lonIndex < lon.length; lonIndex++) {
-    //   for (let latIndex = 0; latIndex < lat.length; latIndex++) {
-    //     for (let heightIndex = 0; heightIndex < depth.length; heightIndex++) {
-    //       const tempIndex = lonIndex * lat.length * depth.length + latIndex * depth.length + heightIndex;
-    //       const temperature = tempData[tempIndex];
-    //       temperature && result.push([lon[lonIndex], lat[latIndex], temperature]);
-    //     }
-    //   }
-    // }
+    const uArray = sampledData.map(item => item[2]);
+    const vArray = sampledData.map(item => item[3]);
+    const uMin = Math.min(...uArray);
+    const uMax = Math.max(...uArray);
 
-    return resultArray;
+    const vMin = Math.min(...vArray);
+    const vMax = Math.max(...vArray);
+
+    const renderPointsLength = sampledData.length;
+
+    res.json({
+        status: 'success',
+        data: {
+            header: {
+                uMin,
+                uMax,
+                vMin,
+                vMax,
+                sampleRate: dataInfo.sampleRate,
+                originLength: dataInfo.originLength,
+                renderPointsLength,
+                lonDistance: dataInfo.lonDistance,
+                latDistance: dataInfo.latDistance,
+                textureWidth: dataInfo.textureWidth,
+                textureHeight: dataInfo.textureHeight,
+                latRange: dataInfo.latRange,
+            },
+            sampledData
+        }
+    });
 };
 
+const handleParticleSystem = (filePath, params, res) => {
+    const originData = readFileSync(filePath);
+    const NetCDF = new NetCDFReader(originData);
+
+    const uArray = NetCDF.getDataVariable(params.u).flat();
+    const U = {
+        array: uArray,
+        min: uArray.reduce((min, val) => (val < min ? val : min), Infinity),
+        max: uArray.reduce((max, val) => (val > max ? val : max), -Infinity),
+        // max: Math.max(...arr),
+        // min: Math.min(...arr),
+    };
+    const vArray = NetCDF.getDataVariable(params.v).flat();
+    const V = {
+        array: vArray,
+        min: vArray.reduce((min, val) => (val < min ? val : min), Infinity),
+        max: vArray.reduce((max, val) => (val > max ? val : max), -Infinity),
+        // max: Math.max(...vArray),
+        // min: Math.min(...vArray),
+    }
+
+    const ncDimensions = NetCDF.dimensions;
+    const dimensions = {
+        lat: ncDimensions.find(item => item.name === params.lat).size,
+        lon: ncDimensions.find(item => item.name === params.lon).size,
+        lev: ncDimensions.find(item => item.name === params.z)?.size || ncDimensions['time'],
+    }
+
+    const lonArray = NetCDF.getDataVariable(params.lon).flat();
+    const lon = {
+        array: lonArray,
+        min: lonArray.reduce((min, val) => (val < min ? val : min), Infinity),
+        max: lonArray.reduce((max, val) => (val > max ? val : max), -Infinity),
+        // min: Math.min(...lonArray),
+        // max: Math.max(...lonArray),
+    }
+
+    const latArray = NetCDF.getDataVariable(params.lat).flat();
+    const lat = {
+        array: latArray,
+        min: latArray.reduce((min, val) => (val < min ? val : min), Infinity),
+        max: latArray.reduce((max, val) => (val > max ? val : max), -Infinity),
+    }
+
+    let levArray;
+    let lev;
+    if(!params.z) {
+        lev = {
+            array: [1],
+            min: 1,
+            max: 1,
+        }
+    }else {
+        levArray = NetCDF.getDataVariable(params.z).flat();
+        lev = {
+            array: levArray,
+            min: Math.min(...levArray),
+            max: Math.max(...levArray),
+        }
+    }
+    res.json({
+        status: 'success',
+        data: {
+            sampledData: {
+                U,
+                V,
+                dimensions,
+                lat,
+                lev,
+                lon,
+            },
+        }
+    })
+}
+
 function convertTo2DArray(lonName, latName, zName, u, v, index, indexMapping, isSample) {
+    console.log(indexMapping)
     const xObject = indexMapping[index[0]];
     xObject.demension = '一维';
     const yObject = indexMapping[index[1]];
@@ -76,15 +164,28 @@ function convertTo2DArray(lonName, latName, zName, u, v, index, indexMapping, is
     const zObject = indexMapping[index[2]];
     zObject.demension = '三维';
 
+    let wObject;
+    if(Object.keys(indexMapping).length === 4) {
+        wObject = indexMapping[index[3]];
+        wObject.demension = '四维';
+    }
+
+    // const strids = {
+    //     '一维': yObject.data.length * zObject.data.length,
+    //     '二维': zObject.data.length,
+    //     '三维': 1
+    // };
+
     const strids = {
-        '一维': yObject.data.length * zObject.data.length,
-        '二维': zObject.data.length,
-        '三维': 1
+        '一维': yObject.data.length * zObject.data.length * (wObject?.data.length || 1),
+        '二维': zObject.data.length * (wObject?.data.length || 1),
+        '三维': wObject?.data.length || 1,
+        '四维': 1
     };
 
-    const lonObject = [xObject, yObject, zObject].find(item => item.name === lonName);
-    const latObject = [xObject, yObject, zObject].find(item => item.name === latName);
-    const heightObject = [xObject, yObject, zObject].find(item => item.name === zName);
+    const lonObject = [xObject, yObject, zObject, wObject].find(item => item.name === lonName);
+    const latObject = [xObject, yObject, zObject, wObject].find(item => item.name === latName);
+    const heightObject = [xObject, yObject, zObject, wObject].find(item => item.name === zName);
 
 
     const originLength = lonObject.data.length * latObject.data.length;
@@ -113,9 +214,8 @@ function convertTo2DArray(lonName, latName, zName, u, v, index, indexMapping, is
     const lonDistance = sampledLons.length > 1 ? sampledLons[1] - sampledLons[0] : 0;
     const latDistance = sampledLats.length > 1 ? sampledLats[1] - sampledLats[0] : 0;
 
-    console.log(resultArr.length);
     resultArr = resultArr.filter(item => item[2] && item[3]);
-    console.log(resultArr.length);
+
     // for (let k = 0; k < heightObject.data.length; k++) {
     //     for (let i = 0; i < lonObject.data.length; i++) {
     //         for (let j = 0; j < latObject.data.length; j++) {
@@ -132,5 +232,6 @@ function convertTo2DArray(lonName, latName, zName, u, v, index, indexMapping, is
 
 module.exports = {
     parseNCFile,
-    getVectorNcData
+    handleWindPole,
+    handleParticleSystem
 };

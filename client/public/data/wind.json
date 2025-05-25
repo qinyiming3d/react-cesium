@@ -2,22 +2,56 @@
   "status": "success",
   "data": {
     "header": {
-      "version": 2,
+      "version": 1,
       "dimensions": [
         {
-          "name": "longitude",
-          "size": 720
-        },
-        {
-          "name": "latitude",
-          "size": 361
+          "name": "lev",
+          "size": 1
         },
         {
           "name": "time",
-          "size": 0
+          "size": 1
+        },
+        {
+          "name": "lat",
+          "size": 361
+        },
+        {
+          "name": "lon",
+          "size": 720
         }
       ],
       "globalAttributes": [
+        {
+          "name": "Originating_or_generating_Center",
+          "type": "char",
+          "value": "US National Weather Service, National Centres for Environmental Prediction (NCEP)"
+        },
+        {
+          "name": "Originating_or_generating_Subcenter",
+          "type": "char",
+          "value": "0"
+        },
+        {
+          "name": "GRIB_table_version",
+          "type": "char",
+          "value": "2,1"
+        },
+        {
+          "name": "Type_of_generating_process",
+          "type": "char",
+          "value": "Forecast"
+        },
+        {
+          "name": "Analysis_or_forecast_generating_process_identifier_defined_by_originating_centre",
+          "type": "char",
+          "value": "Analysis from GFS (Global Forecast System)"
+        },
+        {
+          "name": "file_format",
+          "type": "char",
+          "value": "GRIB-2"
+        },
         {
           "name": "Conventions",
           "type": "char",
@@ -26,56 +60,242 @@
         {
           "name": "history",
           "type": "char",
-          "value": "2018-04-24 12:10:46 GMT by grib_to_netcdf-2.7.0: grib_to_netcdf /data/data05/scratch/_mars-atls04-98f536083ae965b31b0d04811be6f4c6-A_qhuV.grib -o /data/data04/scratch/_grib2netcdf-atls14-a562cefde8a29a7288fa0b8b7f9413f7-YuXbto.nc -utime"
+          "value": "Wed Apr 17 10:29:08 2019: D:\\GreenSoft\\Science\\Data_Processing_Analysis_Visualization\\NetCDF_Operators\\ncap2.exe -3 -S getMinMax.nco C:\\Users\\Rayman\\Downloads\\tempInvDim.nc C:\\Users\\Rayman\\Downloads\\uv.nc\nWed Apr 17 10:29:07 2019: D:\\GreenSoft\\Science\\Data_Processing_Analysis_Visualization\\NetCDF_Operators\\ncpdq.exe -a -lat C:\\Users\\Rayman\\Downloads\\tempFixDim.nc C:\\Users\\Rayman\\Downloads\\tempInvDim.nc\nWed Apr 17 10:29:07 2019: D:\\GreenSoft\\Science\\Data_Processing_Analysis_Visualization\\NetCDF_Operators\\ncks.exe --no_rec_dmn lev C:\\Users\\Rayman\\Downloads\\tempRecDim.nc C:\\Users\\Rayman\\Downloads\\tempFixDim.nc\nWed Apr 17 10:29:07 2019: D:\\GreenSoft\\Science\\Data_Processing_Analysis_Visualization\\NetCDF_Operators\\ncecat.exe -u lev C:\\Users\\Rayman\\Downloads\\tempLevDim.nc C:\\Users\\Rayman\\Downloads\\tempRecDim.nc\nWed Apr 17 10:29:07 2019: D:\\GreenSoft\\Science\\Data_Processing_Analysis_Visualization\\NetCDF_Operators\\ncap2.exe -S defineLev.nco C:\\Users\\Rayman\\Downloads\\tempUV.nc C:\\Users\\Rayman\\Downloads\\tempLevDim.nc\nWed Apr 17 10:29:07 2019: D:\\GreenSoft\\Science\\Data_Processing_Analysis_Visualization\\NetCDF_Operators\\ncrename.exe -v u-component_of_wind_planetary_boundary,U -v v-component_of_wind_planetary_boundary,V C:\\Users\\Rayman\\Downloads\\tempWind.nc C:\\Users\\Rayman\\Downloads\\tempUV.nc\nWed Apr 17 10:29:06 2019: D:\\GreenSoft\\Science\\Data_Processing_Analysis_Visualization\\NetCDF_Operators\\ncks.exe -v u-component_of_wind_planetary_boundary,v-component_of_wind_planetary_boundary C:\\Users\\Rayman\\Downloads\\20180916.nc C:\\Users\\Rayman\\Downloads\\tempWind.nc\nRead using CDM IOSP GribCollection v3"
+        },
+        {
+          "name": "featureType",
+          "type": "char",
+          "value": "GRID"
+        },
+        {
+          "name": "NCO",
+          "type": "char",
+          "value": "netCDF Operators version 4.7.7-alpha01 (Homepage = http://nco.sf.net, Code = http://github.com/nco/nco)"
         }
       ],
       "variables": [
         {
-          "name": "longitude",
+          "name": "LatLon_Projection",
           "dimensions": [
             0
           ],
           "attributes": [
             {
-              "name": "units",
+              "name": "grid_mapping_name",
               "type": "char",
-              "value": "degrees_east"
+              "value": "latitude_longitude"
             },
             {
-              "name": "long_name",
-              "type": "char",
-              "value": "longitude"
+              "name": "earth_radius",
+              "type": "double",
+              "value": 6371229
             }
           ],
-          "type": "float",
-          "size": 2880,
-          "offset": 1252,
+          "type": "int",
+          "size": 4,
+          "offset": 4540,
           "record": false
         },
         {
-          "name": "latitude",
+          "name": "U",
           "dimensions": [
-            1
+            0,
+            1,
+            2,
+            3
           ],
           "attributes": [
             {
-              "name": "units",
-              "type": "char",
-              "value": "degrees_north"
-            },
-            {
               "name": "long_name",
               "type": "char",
-              "value": "latitude"
+              "value": "u-component of wind @ Planetary Boundary Layer"
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "m/s"
+            },
+            {
+              "name": "abbreviation",
+              "type": "char",
+              "value": "UGRD"
+            },
+            {
+              "name": "missing_value",
+              "type": "float",
+              "value": null
+            },
+            {
+              "name": "grid_mapping",
+              "type": "char",
+              "value": "LatLon_Projection"
+            },
+            {
+              "name": "coordinates",
+              "type": "char",
+              "value": "reftime time lat lon "
+            },
+            {
+              "name": "Grib_Variable_Id",
+              "type": "char",
+              "value": "VAR_0-2-2_L220"
+            },
+            {
+              "name": "Grib2_Parameter",
+              "type": "int",
+              "value": [
+                0,
+                2,
+                2
+              ]
+            },
+            {
+              "name": "Grib2_Parameter_Discipline",
+              "type": "char",
+              "value": "Meteorological products"
+            },
+            {
+              "name": "Grib2_Parameter_Category",
+              "type": "char",
+              "value": "Momentum"
+            },
+            {
+              "name": "Grib2_Parameter_Name",
+              "type": "char",
+              "value": "u-component of wind"
+            },
+            {
+              "name": "Grib2_Level_Type",
+              "type": "int",
+              "value": 220
+            },
+            {
+              "name": "Grib2_Level_Desc",
+              "type": "char",
+              "value": "Planetary Boundary Layer"
+            },
+            {
+              "name": "Grib2_Generating_Process_Type",
+              "type": "char",
+              "value": "Forecast"
+            },
+            {
+              "name": "max",
+              "type": "float",
+              "value": 42.99182891845703
+            },
+            {
+              "name": "min",
+              "type": "float",
+              "value": -54.00817108154297
             }
           ],
           "type": "float",
-          "size": 1444,
-          "offset": 4132,
+          "size": 1039680,
+          "offset": 4544,
           "record": false
         },
         {
-          "name": "time",
+          "name": "V",
+          "dimensions": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "attributes": [
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "v-component of wind @ Planetary Boundary Layer"
+            },
+            {
+              "name": "units",
+              "type": "char",
+              "value": "m/s"
+            },
+            {
+              "name": "abbreviation",
+              "type": "char",
+              "value": "VGRD"
+            },
+            {
+              "name": "missing_value",
+              "type": "float",
+              "value": null
+            },
+            {
+              "name": "grid_mapping",
+              "type": "char",
+              "value": "LatLon_Projection"
+            },
+            {
+              "name": "coordinates",
+              "type": "char",
+              "value": "reftime time lat lon "
+            },
+            {
+              "name": "Grib_Variable_Id",
+              "type": "char",
+              "value": "VAR_0-2-3_L220"
+            },
+            {
+              "name": "Grib2_Parameter",
+              "type": "int",
+              "value": [
+                0,
+                2,
+                3
+              ]
+            },
+            {
+              "name": "Grib2_Parameter_Discipline",
+              "type": "char",
+              "value": "Meteorological products"
+            },
+            {
+              "name": "Grib2_Parameter_Category",
+              "type": "char",
+              "value": "Momentum"
+            },
+            {
+              "name": "Grib2_Parameter_Name",
+              "type": "char",
+              "value": "v-component of wind"
+            },
+            {
+              "name": "Grib2_Level_Type",
+              "type": "int",
+              "value": 220
+            },
+            {
+              "name": "Grib2_Level_Desc",
+              "type": "char",
+              "value": "Planetary Boundary Layer"
+            },
+            {
+              "name": "Grib2_Generating_Process_Type",
+              "type": "char",
+              "value": "Forecast"
+            },
+            {
+              "name": "max",
+              "type": "float",
+              "value": 43.88520431518555
+            },
+            {
+              "name": "min",
+              "type": "float",
+              "value": -44.61479568481445
+            }
+          ],
+          "type": "float",
+          "size": 1039680,
+          "offset": 1044224,
+          "record": false
+        },
+        {
+          "name": "lat",
           "dimensions": [
             2
           ],
@@ -83,141 +303,141 @@
             {
               "name": "units",
               "type": "char",
-              "value": "hours since 1900-01-01 00:00:0.0"
+              "value": "degrees_north"
+            }
+          ],
+          "type": "float",
+          "size": 1444,
+          "offset": 2083904,
+          "record": false
+        },
+        {
+          "name": "lev",
+          "dimensions": [
+            0
+          ],
+          "attributes": [
+            {
+              "name": "long_name",
+              "type": "char",
+              "value": "Level"
+            }
+          ],
+          "type": "double",
+          "size": 8,
+          "offset": 2085348,
+          "record": false
+        },
+        {
+          "name": "lon",
+          "dimensions": [
+            3
+          ],
+          "attributes": [
+            {
+              "name": "units",
+              "type": "char",
+              "value": "degrees_east"
+            }
+          ],
+          "type": "float",
+          "size": 2880,
+          "offset": 2085356,
+          "record": false
+        },
+        {
+          "name": "reftime",
+          "dimensions": [],
+          "attributes": [
+            {
+              "name": "units",
+              "type": "char",
+              "value": "Hour since 2018-09-16T00:00:00Z"
+            },
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "forecast_reference_time"
             },
             {
               "name": "long_name",
               "type": "char",
-              "value": "time"
+              "value": "GRIB reference time"
             },
             {
               "name": "calendar",
               "type": "char",
-              "value": "gregorian"
+              "value": "proleptic_gregorian"
             }
           ],
-          "type": "int",
-          "size": 4,
-          "offset": 5576,
-          "record": true
+          "type": "double",
+          "size": 8,
+          "offset": 2088236,
+          "record": false
         },
         {
-          "name": "u10",
+          "name": "time",
           "dimensions": [
-            2,
-            1,
-            0
+            1
           ],
           "attributes": [
             {
-              "name": "scale_factor",
-              "type": "double",
-              "value": 0.0003873652974414638
-            },
-            {
-              "name": "add_offset",
-              "type": "double",
-              "value": -0.34812935922342775
-            },
-            {
-              "name": "_FillValue",
-              "type": "short",
-              "value": -32767
-            },
-            {
-              "name": "missing_value",
-              "type": "short",
-              "value": -32767
-            },
-            {
               "name": "units",
               "type": "char",
-              "value": "m s**-1"
+              "value": "Hour since 2018-09-16T00:00:00Z"
+            },
+            {
+              "name": "standard_name",
+              "type": "char",
+              "value": "time"
             },
             {
               "name": "long_name",
               "type": "char",
-              "value": "10 metre U wind component"
+              "value": "GRIB forecast or observation time"
+            },
+            {
+              "name": "calendar",
+              "type": "char",
+              "value": "proleptic_gregorian"
             }
           ],
-          "type": "short",
-          "size": 519840,
-          "offset": 5580,
-          "record": true
-        },
-        {
-          "name": "v10",
-          "dimensions": [
-            2,
-            1,
-            0
-          ],
-          "attributes": [
-            {
-              "name": "scale_factor",
-              "type": "double",
-              "value": 0.00040849996774030325
-            },
-            {
-              "name": "add_offset",
-              "type": "double",
-              "value": 1.050563171738542
-            },
-            {
-              "name": "_FillValue",
-              "type": "short",
-              "value": -32767
-            },
-            {
-              "name": "missing_value",
-              "type": "short",
-              "value": -32767
-            },
-            {
-              "name": "units",
-              "type": "char",
-              "value": "m s**-1"
-            },
-            {
-              "name": "long_name",
-              "type": "char",
-              "value": "10 metre V wind component"
-            }
-          ],
-          "type": "short",
-          "size": 519840,
-          "offset": 525420,
-          "record": true
+          "type": "double",
+          "size": 8,
+          "offset": 2088244,
+          "record": false
         }
       ],
       "recordDimension": {
-        "length": 12,
-        "id": 2,
-        "name": "time",
-        "recordStep": 1039684
+        "length": 0,
+        "recordStep": 0
       }
     },
-    "filePath": "qinyimingOwner/2017.nc",
+    "filePath": "qinyimingOwner/demo.nc",
     "selectOption": [
       {
         "name": "lon",
-        "value": "longitude"
+        "value": "lon"
       },
       {
         "name": "lat",
-        "value": "latitude"
+        "value": "lat"
       },
       {
         "name": "u",
-        "value": "u10"
+        "value": "U"
       },
       {
         "name": "v",
-        "value": "v10"
+        "value": "V"
       },
       {
         "name": "renderMode",
-        "value": "windPole"
+        "value": "particleSystem"
+      },
+      {
+        "name": "z",
+        "value": "lev"
       }
     ]
   }

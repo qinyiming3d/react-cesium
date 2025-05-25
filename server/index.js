@@ -149,40 +149,12 @@ app.get('/api/getVectorGridData', async (req, res) => {
             return res.status(400).json({error: 'params参数格式不正确'});
         }
 
-        let {resultArr: sampledData, dataInfo} = vectorUtil.getVectorNcData(filePath, parsedParams);
 
-
-        // const u = sampledData.map(item => item[2]);
-        // const v = sampledData.map(item => item[3]);
-        // const uMin = Math.min(...u);
-        // const uMax = Math.max(...u);
-        //
-        // const vMin = Math.min(...v);
-        // const vMax = Math.max(...v);
-
-        const renderPointsLength = sampledData.length;
-
-        res.json({
-            status: 'success',
-            data: {
-                header: {
-                    // uMin,
-                    // uMax,
-                    // vMin,
-                    // vMax,
-                    sampleRate: dataInfo.sampleRate,
-                    originLength: dataInfo.originLength,
-                    renderPointsLength,
-                    lonDistance: dataInfo.lonDistance,
-                    latDistance: dataInfo.latDistance,
-                    textureWidth: dataInfo.textureWidth,
-                    textureHeight: dataInfo.textureHeight,
-                    latRange: dataInfo.latRange,
-                },
-                sampledData
-            }
-        });
-
+        if (parsedParams.renderMode === 'particleSystem') {
+            vectorUtil.handleParticleSystem(filePath, parsedParams, res);
+        } else if (parsedParams.renderMode === 'windPole') {
+            vectorUtil.handleWindPole(filePath, parsedParams, res);
+        }
     } catch (error) {
         console.error('获取网格数据时出错:', error);
         res.status(500).json({

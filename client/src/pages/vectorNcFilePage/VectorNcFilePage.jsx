@@ -8,10 +8,13 @@ import styles from './index.module.scss';
 import Legend from "@components/Legend/Legend.jsx";
 import ViewerContext from '../../viewContext.js';
 import windPole from './renderMode/windPole.js'
+import particleSystem from './renderMode/windParticleSystem/particleSystem.js'
+import eventBus from '@_public/eventBus.js';
+
 
 const {useToken} = theme;
 const {Option} = Select;
-const isGenerateUV = (renderMode) => ['rectangleRender', 'waterRender'].includes(renderMode)
+const isGenerateUV = (renderMode) => ['particleSystem'].includes(renderMode)
 
 const NcFilePage = () => {
     const {t} = useTranslation();
@@ -33,6 +36,7 @@ const NcFilePage = () => {
     const renderUnit = useRef(null); // 渲染结果
     const [isStructureModalOpen, setIsStructureModalOpen] = useState(false); // 表格显隐
     const [uvOpen, setUvOpen] = useState(false); // uv图显隐
+    const [imgList, setImageList] = useState([]);
 
     const [presetFiles, setPresetFiles] = useState([
         {name: '风场nc数据', path: '/data/wind.json'},
@@ -42,17 +46,62 @@ const NcFilePage = () => {
     const viewer = useContext(ViewerContext);
 
     const renderMethods = {
-        // point: pointRender, // 点渲染
-        // column: cylinderRender, // 柱渲染
-        // contour: lineRender, // 等值线渲染
-        // shader: shaderRender, // shader渲染
-        // rectangleRender: rectangleRender, // 矩形渲染
-        // waterRender: waterRender, // 水面渲染
         windPole: windPole,
+        particleSystem: particleSystem,
     };
 
+    const handleTextureGenerated = (data) => {
+        console.log('gogogo出发咯', data);
+        const img = data.map(item => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (item.title === '粒子初始位置') {
+                canvas.width = item.width; // 设置 canvas 宽度
+                canvas.height = item.height; // 设置 canvas 高度
+                const imageData = ctx.createImageData(item.width, item.height);
+                for (let i = 0; i < item.array.length / 4; i++) {
+                    const value = item.array[i];
+                    // r通道x坐标（经度）  g通道y坐标（纬度）  b通道z坐标（高度） a通道为0
+                    imageData.data[i * 4] = value / 360; // R通道
+                    imageData.data[i * 4 + 1] = value + 90 / 180; // G通道
+                    imageData.data[i * 4 + 2] = 0; // B通道
+                    imageData.data[i * 4 + 3] = 255;                   // Alpha通道
+                }
+                ctx.putImageData(imageData, 0, 0);
+            } else {
+                canvas.width = item.width; // 设置 canvas 宽度
+                canvas.height = item.height; // 设置 canvas 高度
+                const imageData = ctx.createImageData(item.width, item.height);
+                const normalize = v => (v - item.min) / (item.max - item.min);
+                for (let i = 0; i < item.array.length; i++) {
+                    imageData.data[i * 4] = Math.floor(normalize(item.array[i]) * 255); // R通道
+                    imageData.data[i * 4 + 3] = 255;                   // Alpha通道
+                }
+                // const imageData = new ImageData(Uint8ClampedArray.from(item.array), item.width, item.height);
+                ctx.putImageData(imageData, 0, 0);
+            }
+            return {
+                title: item.title,
+                url: canvas.toDataURL(),
+            }
+        });
+        setImageList(originImg => {
+            const newTitleArr = img.map(item => item.title);
+            const originUV = originImg.filter(item => !newTitleArr.includes(item.title));
+            return [...originUV, ...img];
+        });
+    }
+
+    const handleRemoveImageList = () => {
+        setImageList([]);
+    }
+
     useEffect(() => {
+        eventBus.on('windTextureGenerated', handleTextureGenerated);
+        eventBus.on('removeImageList', handleRemoveImageList);
         return () => {
+            eventBus.off('windTextureGenerated', handleTextureGenerated);
+            eventBus.off('removeImageList', handleRemoveImageList);
             messageApi.destroy();
             clearRenderUnit();
         }
@@ -116,6 +165,7 @@ const NcFilePage = () => {
                 u: values.u,
                 v: values.v,
                 isSample: !(isGenerateUV(renderMode)),
+                renderMode
             };
 
             const res = await vectorController.getGridData(filePath, JSON.stringify(params));
@@ -124,8 +174,6 @@ const NcFilePage = () => {
 
 
             setRenderInfo({...res.data.header})
-
-            await vectorController.getGridData(filePath, JSON.stringify(params));
 
             clearRenderUnit();
             setRenderInfo({...res.data.header});
@@ -225,7 +273,7 @@ const NcFilePage = () => {
                             <Button
                                 onClick={() => setUvOpen(true)}
                                 className={styles.actionButton}
-                                disabled={!renderUnit.current || !isGenerateUV(form.getFieldValue('renderMode'))}
+                                disabled={!imgList.length}
                             >
                                 查看uv图
                             </Button>
@@ -256,7 +304,7 @@ const NcFilePage = () => {
                             </Form.Item>
 
                             <Form.Item name="z" label={t('temperaturePage.query.z')}>
-                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                                <Select placeholder={'请选择高度'}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
@@ -279,7 +327,7 @@ const NcFilePage = () => {
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="renderMode" label="渲染方式" initialValue="rectangleRender">
+                            <Form.Item name="renderMode" label="渲染方式" initialValue="particleSystem">
                                 <Select>
                                     <Option value="windPole">风杆图</Option>
                                     <Option value="particleSystem">粒子系统</Option>
@@ -346,7 +394,21 @@ const NcFilePage = () => {
                 wrapClassName={styles.modalWrap}
                 centered
             >
-                <img src={renderUnit.current?.uv} style={{display: 'block', margin: '0 auto', maxWidth: '100%'}}/>
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '16px',
+                        alignItems: 'center',
+                    }}>
+                    {imgList.map((item, index) => (
+                        <div key={item.title} style={{textAlign: 'center'}}>
+                            <img src={item.url}
+                                 style={{width: '100%', height: 'auto', display: 'block', margin: '0 auto'}}/>
+                            <p style={{marginTop: '8px'}}>{item.title}</p>
+                        </div>
+                    ))}
+                </div>
             </Modal>
         </div>
 
