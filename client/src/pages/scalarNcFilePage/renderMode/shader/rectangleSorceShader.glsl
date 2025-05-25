@@ -30,11 +30,52 @@ float bilinear(sampler2D tex, const vec2 uv) {
     return mix(mix(tl, tr, f.x), mix(bl, br, f.x), f.y);
 }
 
+
+// 使用最邻近法从纹理中获取值
+float nearest(sampler2D tex, const vec2 uv) {
+    vec2 px = 1.0 / u_image_res; // 单个像素的大小
+    vec2 vc = (floor(uv * u_image_res + 0.5)) * px; // 最邻近像素的坐标
+
+    // 获取最邻近像素的值
+    return calcTexture(tex, vc);
+}
+
+
+// 双三次权重函数
+float cubicWeight(float x) {
+    x = abs(x);
+    if (x <= 1.0) {
+        return 1.0 - 2.0 * x * x + x * x * x;
+    } else if (x < 2.0) {
+        return 4.0 - 8.0 * x + 5.0 * x * x - x * x * x;
+    }
+    return 0.0;
+}
+// 使用双三次插值从纹理中获取更平滑的值
+float bicubic(sampler2D tex, const vec2 uv) {
+    vec2 px = 1.0 / u_image_res; // 单个像素的大小
+    vec2 vc = (floor(uv * u_image_res)) * px; // 当前像素的左上角坐标
+    vec2 f = fract(uv * u_image_res); // 当前 UV 坐标的小数部分
+
+
+    // 获取周围 16 个像素的值并加权
+    float result = 0.0;
+    for (int i = -1; i <= 2; i++) {
+        for (int j = -1; j <= 2; j++) {
+            vec2 offset = vec2(float(i), float(j)) * px;
+            float weight = cubicWeight(f.x - float(i)) * cubicWeight(f.y - float(j));
+            result += calcTexture(tex, vc + offset) * weight;
+        }
+    }
+
+    return result;
+}
+
 // 根据 UV 坐标从纹理中获取实际数据值
 float getValue(sampler2D tex, const vec2 uv) {
     float min = u_range.x; // 数据最小值
     float max = u_range.y; // 数据最大值
-    float r = bilinear(tex, uv); // 获取纹理值
+    float r = nearest(tex, uv); // 获取纹理值
     return r * (max - min) + min; // 将纹理值映射到数据范围
 }
 
