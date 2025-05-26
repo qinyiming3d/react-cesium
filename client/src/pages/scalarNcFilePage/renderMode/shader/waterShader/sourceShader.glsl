@@ -5,16 +5,16 @@ const float EPSILON = 1e-3;
 //#define EPSILON_NRM (0.1 / iResolution.x)
 #define EPSILON_NRM (0.1 / 200.0)
       // sea
-const int ITER_GEOMETRY = 3;
-const int ITER_FRAGMENT = 5;
+const int ITER_GEOMETRY = 3; // 用于几何层面的迭代，主要用于快速生成海面的大致形状。
+const int ITER_FRAGMENT = 5; // 用于片段层面的迭代，主要用于渲染时的高精度计算，增强视觉效果。
 const float SEA_HEIGHT = 0.6; // 波浪高度
-const float SEA_CHOPPY = 4.0; // 尖锐度
+const float SEA_CHOPPY = 10.0; // 尖锐度
 const float SEA_SPEED = 1.4; // 运动速度
 const float SEA_FREQ = 0.26; // 频率
-const vec3 SEA_BASE = vec3(0.1, 0.19, 0.22); // 海水基底色
-const vec3 SEA_WATER_COLOR = vec3(0.8, 0.9, 0.6); // 反光色
+const vec3 SEA_BASE = vec3(0.05, 0.15, 0.25); // 海水基底色
+const vec3 SEA_WATER_COLOR = vec3(0.4, 0.6, 0.9); // 反光色
 //#define SEA_TIME (1.0 + iTime * SEA_SPEED)
-const mat2 octave_m = mat2(1.6, 1.2, -1.2, 1.6);
+const mat2 octave_m = mat2(1.6, 1.2, -1.2, 1.6);// 生成噪声或波浪形状时，通过矩阵变换改变噪声的频率和方向，从而增加细节和复杂性。
 // math 欧拉角转换为旋转矩阵，用于调整光线方向。
 mat3 fromEuler(vec3 ang) {
     vec2 a1 = vec2(sin(ang.x), cos(ang.x));
@@ -61,6 +61,7 @@ float sea_octave(vec2 uv, float choppy) {
     wv = mix(wv, swv, wv);
     return pow(1.0 - pow(wv.x * wv.y, 0.65), choppy);
 }
+// 计算光线位置与海面高度的差值
 float map(vec3 p) {
     float freq = SEA_FREQ;
     float amp = SEA_HEIGHT;
@@ -106,6 +107,9 @@ vec3 getSeaColor(vec3 p, vec3 n, vec3 l, vec3 eye, vec3 dist) {
     return color;
 }
 // tracing 通过中心差分计算法线，增强光照细节。
+//p.y 越大，意味着点的位置在海平面之上更高。由于 map_detailed 函数计算的是点 p 的高度与海面高度的差值，
+//p.y 增大时，map_detailed(p) 的值也会增大，法线的 y 分量（即垂直分量）会占主导地位。
+//这会导致法线向量更接近于垂直方向（vec3(0, 1, 0)）
 vec3 getNormal(vec3 p, float eps) {
     vec3 n;
     n.y = map_detailed(p);
@@ -116,22 +120,22 @@ vec3 getNormal(vec3 p, float eps) {
 }
 // 二分法光线步进检测海面交点，平衡性能与精度
 float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
-    float tm = 0.0;
-    float tx = 1000.0;
-    float hx = map(ori + dir * tx);
-    if (hx > 0.0) return tx;
-    float hm = map(ori + dir * tm);
+    float nearPoint = 0.0; // 近端点
+    float farPoint = 1000.0; // 远端点
+    float farHeight = map(ori + dir * farPoint);
+    if (farHeight > 0.0) return farPoint;
+    float nearHeight = map(ori + dir * nearPoint);
     float tmid = 0.0;
     for (int i = 0; i < NUM_STEPS; i++) {
-        tmid = mix(tm, tx, hm / (hm - hx));
+        tmid = mix(nearPoint, farPoint, nearHeight / (nearHeight - farHeight));
         p = ori + dir * tmid;
         float hmid = map(p);
         if (hmid < 0.0) {
-            tx = tmid;
-            hx = hmid;
+            farPoint = tmid;
+            farHeight = hmid;
         } else {
-            tm = tmid;
-            hm = hmid;
+            nearPoint = tmid;
+            nearHeight = hmid;
         }
     }
     return tmid;
@@ -142,7 +146,7 @@ vec4 czm_getMaterial(vec2 vUv)
     uv = vUv * 2.0 - 1.0;
     float time = iTime * 0.3 + 0.0 * 0.01;
     // ray
-    vec3 ang = vec3(0, 1.2, 0.0); //欧拉角
+    vec3 ang = vec3(0, 1.2, 0.0); // 欧拉角
     vec3 ori = vec3(0.0, 3.5, 0);  // 观察者位置
     vec3 dir = normalize(vec3(uv.xy, -2.0)); dir.z += length(uv) * 0.15; // 光线方向
     dir = normalize(dir) * fromEuler(ang);
