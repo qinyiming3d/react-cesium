@@ -2,7 +2,7 @@ import React from 'react';
 
 const Legend = ({ min, max, gradient, width = 300, height = 50 }) => {
     return (
-        <div style={{ width: `${width}px`, position: 'fixed', bottom: '30px', left: '30px', zIndex: 9999, color: '#fff' }}>
+        <div style={{ width: `${width}px`, position: 'fixed', bottom: '30px', right: '30px', zIndex: 9999, color: '#fff' }}>
             {/* 颜色渐变条 */}
             <div
                 style={{
