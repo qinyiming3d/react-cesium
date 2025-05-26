@@ -5,7 +5,8 @@ import {
     Cartographic,
     ScreenSpaceEventType,
     Math as cesiumMath,
-    createWorldTerrainAsync
+    createWorldTerrainAsync,
+    SkyBox
 } from 'cesium';
 import {useEffect, useState, createContext} from "react";
 import {useRoutes} from 'react-router-dom';
@@ -92,6 +93,25 @@ const App = () => {
             // ),
         });
 
+        // 外天空盒
+        viewer.scene.skyBox = new SkyBox({
+            sources: {
+                positiveX: "/Standard-Cube-Map/px1.png",
+                negativeX: "/Standard-Cube-Map/nx1.png",
+                positiveY: "/Standard-Cube-Map/pz.png",
+                negativeY: "/Standard-Cube-Map/nz1.png",
+                positiveZ: "/Standard-Cube-Map/py.png",
+                negativeZ: "/Standard-Cube-Map/ny1.png",
+            },
+        });
+
+        if(isDarkTheme) {
+            viewer.scene.skyBox.show = false; // 如果是暗黑主题，隐藏天空盒
+        }
+
+        // viewer.scene.skyBox = SkyBox.createEarthSkyBox();
+
+
         viewer.terrainProvider = await createWorldTerrainAsync({
             requestVertexNormals: true, //开启地形光照
             // requestWaterMask: true, // 开启水面波纹
@@ -142,10 +162,17 @@ const App = () => {
     }, []);
 
     useEffect(() => {
+        console.log('gogoog触发咯')
         // 主题变化时更新data-theme属性
         document.documentElement.setAttribute('data-theme', isDarkTheme ? 'dark' : 'light');
         document.documentElement.style.setProperty('--back-ground', isDarkTheme ? 'rgba(224,224,224, 0.5)' : 'rgba(224,224,224)');
         document.documentElement.style.setProperty('--text-color', !isDarkTheme ? 'rgba(224,224,224, 0.5)' : 'rgba(224,224,224)');
+        if (isDarkTheme) {
+            viewerState && (viewerState.scene.skyBox.show = false);
+        } else {
+            viewerState && (viewerState.scene.skyBox.show = true);
+        }
+
     }, [isDarkTheme]);
 
     const currentTheme = {
@@ -168,7 +195,7 @@ const App = () => {
                         isMobile={isMobile}
                     />
                     <div id="cesiumContainer" className={styles.cesiumContainer}/>
-                     {useRoutes(routes)}
+                    {useRoutes(routes)}
                 </div>
             </ConfigProvider>
         </ViewerContext>

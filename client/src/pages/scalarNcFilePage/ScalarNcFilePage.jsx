@@ -41,9 +41,9 @@ const ScalarNcFilePage = () => {
     const [uvOpen, setUvOpen] = useState(false); // uv图显隐
 
     const [presetFiles, setPresetFiles] = useState([
-        {name: '温度场nc数据', path: '/data/temperature.json'},
-        {name: '二氧化碳分压', path: '/data/co2Pressure.json'},
-        {name: '盐度场数据', path: '/data/salinity.json'},
+        {name: 'scalarNcFilePage.presetFiles.temperature', path: '/data/temperature.json'},
+        {name: 'scalarNcFilePage.presetFiles.co2Pressure', path: '/data/co2Pressure.json'},
+        {name: 'scalarNcFilePage.presetFiles.salinity', path: '/data/salinity.json'},
     ]);
     const [selectedPreset, setSelectedPreset] = useState(null);
 
@@ -84,7 +84,7 @@ const ScalarNcFilePage = () => {
 
 
         if (!file) {
-            messageApi.warning('请先选择文件');
+            messageApi.warning(t('scalarNcFilePage.messages.selectFileFirst'));
             return;
         }
 
@@ -98,14 +98,14 @@ const ScalarNcFilePage = () => {
             if (res.status !== "success") {
                 throw new Error(res.error)
             }
-            messageApi.success('上传成功');
+            messageApi.success(t('scalarNcFilePage.messages.uploadSuccess'));
             setVariables(res.data.header.variables || []);
             setFilePath(res.data.filePath);
             setHeader(res.data.header);
             form?.resetFields();
             setSelectedPreset(null);
         } catch (error) {
-            messageApi.error('数据处理失败, 请上传NetCDF v3.x文件', error);
+            messageApi.error(t('scalarNcFilePage.messages.uploadFailed'), error);
         } finally {
             setUploading(false);
         }
@@ -117,7 +117,7 @@ const ScalarNcFilePage = () => {
 
     const confirm = async (values) => {
         if (!viewer) {
-            messageApi.warning('cesium矢量地图未加载，请检查网络是否正常');
+            messageApi.warning(t('scalarNcFilePage.messages.cesiumNotLoaded'));
         }
         try {
             seConfirmLoading(true);
@@ -134,16 +134,12 @@ const ScalarNcFilePage = () => {
 
             clearRenderUnit();
 
-
-            setRenderInfo({...res.data.header})
-
-
             clearRenderUnit();
             setRenderInfo({...res.data.header});
 
             renderUnit.current = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header, updateLegendData);
 
-            messageApi.success('渲染成功');
+            messageApi.success(t('scalarNcFilePage.messages.renderSuccess'));
         } catch (error) {
             messageApi.error(error.message);
         } finally {
@@ -173,7 +169,7 @@ const ScalarNcFilePage = () => {
             {/* 左侧容器 */}
             <div className={styles.leftContainer}>
                 {/* 数据上传 */}
-                <Card title={t('temperaturePage.upload.title')} className={styles.card}>
+                <Card title={t('scalarNcFilePage.upload.title')} className={styles.card}>
                     {
                         <>
                             <div className={styles.flex}>
@@ -184,19 +180,19 @@ const ScalarNcFilePage = () => {
                                     accept=".nc"
                                     disabled={uploading}
                                 >
-                                    <Button>{t('temperaturePage.upload.selectFile')}</Button>
+                                    <Button>{t('scalarNcFilePage.upload.selectFile')}</Button>
                                 </Upload>
 
                                 {/* 预设文件下拉框 */}
                                 <Select
-                                    placeholder="选择预设文件"
+                                    placeholder={t('scalarNcFilePage.presetFiles.selectPlaceholder')}
                                     value={selectedPreset}
                                     onChange={handlePresetSelect}
                                     className={styles.presetSelect}
                                 >
                                     {presetFiles.map((preset) => (
                                         <Option key={preset.name} value={preset.name}>
-                                            {preset.name}
+                                            {t(preset.name)}
                                         </Option>
                                     ))}
                                 </Select>
@@ -212,93 +208,92 @@ const ScalarNcFilePage = () => {
                             </div>
 
                             {/* 文件名 */}
-                            <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {fileName}</p>
-                            {/* 上传文件 */}
-                            <Button
-                                type="primary"
-                                onClick={handleUpload}
-                                loading={uploading}
-                                className={styles.uploadButton}
-                                disabled={!file}
-                            >
-                                {t('temperaturePage.upload.uploadButton')}
-                            </Button>
-                            {/* 查看数据结构 */}
-                            <Button
-                                onClick={() => setIsStructureModalOpen(true)}
-                                className={styles.actionButton}
-                                disabled={!header}
-                            >
-                                {t('temperaturePage.actions.viewStructure')}
-                            </Button>
+                            <p className={styles.fileName}>{t('scalarNcFilePage.upload.selectedFile')}: {fileName}</p>
+                            <div className={styles.divButton}>
+                                {/* 上传文件 */}
+                                <Button
+                                    type="primary"
+                                    onClick={handleUpload}
+                                    loading={uploading}
+                                    disabled={!file}
+                                >
+                                    {t('scalarNcFilePage.upload.uploadButton')}
+                                </Button>
+                                {/* 查看数据结构 */}
+                                <Button
+                                    onClick={() => setIsStructureModalOpen(true)}
+                                    disabled={!header}
+                                >
+                                    {t('scalarNcFilePage.actions.viewStructure')}
+                                </Button>
 
-                            {/* 查看uv图 */}
-                            <Button
-                                onClick={() => setUvOpen(true)}
-                                className={styles.actionButton}
-                                disabled={!renderUnit.current || !isGenerateUV(form.getFieldValue('renderMode'))}
-                            >
-                                查看uv图
-                            </Button>
+                                {/* 查看uv图 */}
+                                <Button
+                                    onClick={() => setUvOpen(true)}
+                                    disabled={!renderUnit.current || !isGenerateUV(form.getFieldValue('renderMode'))}
+                                >
+                                    {t('scalarNcFilePage.renderMode.viewUV')}
+                                </Button>
+                            </div>
                         </>
                     }
                 </Card>
 
                 {/* 数据查询 */}
-                <Card title={t('temperaturePage.query.title')} className={styles.card}>
+                <Card title={t('scalarNcFilePage.query.title')} className={styles.card}>
                     {variables.length === 0 ? (
-                        <EmptyState description="请先上传数据文件"/>
+                        <EmptyState description={t('scalarNcFilePage.messages.uploadDataFirst')}/>
                     ) : (
                         <Form form={form} onFinish={confirm}>
-                            <Form.Item name="lon" label={t('temperaturePage.query.x')} rules={[{required: true}]}>
-                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                            <Form.Item name="lon" label={t('scalarNcFilePage.query.x')} rules={[{required: true}]}>
+                                <Select placeholder={t('scalarNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="lat" label={t('temperaturePage.query.y')} rules={[{required: true}]}>
-                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                            <Form.Item name="lat" label={t('scalarNcFilePage.query.y')} rules={[{required: true}]}>
+                                <Select placeholder={t('scalarNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="z" label={t('temperaturePage.query.z')}>
-                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                            <Form.Item name="z" label={t('scalarNcFilePage.query.z')}>
+                                <Select placeholder={t('scalarNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="f" label={t('temperaturePage.query.f')} rules={[{required: true}]}>
-                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                            <Form.Item name="f" label={t('scalarNcFilePage.query.f')} rules={[{required: true}]}>
+                                <Select placeholder={t('scalarNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="renderMode" label="渲染方式" initialValue="rectangleRender">
+                            <Form.Item name="renderMode" label={t('scalarNcFilePage.renderMode.label')} initialValue="rectangleRender">
                                 <Select>
-                                    <Option value="point">点渲染</Option>
-                                    <Option value="column">柱渲染</Option>
-                                    <Option value="shader">shader渲染</Option>
-                                    <Option value="rectangleRender">纹理渲染</Option>
-                                    <Option value="waterRender">水面渲染</Option>
+                                    <Option value="point">{t('scalarNcFilePage.renderMode.point')}</Option>
+                                    <Option value="column">{t('scalarNcFilePage.renderMode.column')}</Option>
+                                    <Option value="shader">{t('scalarNcFilePage.renderMode.shader')}</Option>
+                                    <Option value="rectangleRender">{t('scalarNcFilePage.renderMode.rectangleRender')}</Option>
+                                    <Option value="waterRender">{t('scalarNcFilePage.renderMode.waterRender')}</Option>
                                 </Select>
                             </Form.Item>
 
-                            <Button type="primary" htmlType="submit" loading={confirmLoading}
-                                    className={styles.confirmButton}>
-                                确认
-                            </Button>
+                            <div className={styles.divButton}>
+                                <Button type="primary" htmlType="submit" loading={confirmLoading}>
+                                    {t('scalarNcFilePage.query.submitButton')}
+                                </Button>
 
-                            <Button onClick={clearRenderUnit}
-                                    className={styles.actionButton}>{t('temperaturePage.actions.clearHeatmap')}</Button>
+                                <Button onClick={clearRenderUnit}>{t('scalarNcFilePage.actions.clearHeatmap')}</Button>
+                            </div>  
                         </Form>)}
 
                 </Card>
@@ -306,19 +301,13 @@ const ScalarNcFilePage = () => {
 
             {/* 右侧卡片组 */}
             <div className={styles.rightContainer}>
-                {/* 数据操作 */}
-                {/* <Card title={t('temperaturePage.actions.title')} className={styles.card}>
-          {!data.length > 0 ? <EmptyState description="请先上传数据文件" /> : <>
-          </>}
-        </Card> */}
-
                 {/* 渲染效率 */}
-                <Card title={t('temperaturePage.rendering.title')} className={styles.card}>
+                <Card title={t('scalarNcFilePage.rendering.title')} className={styles.card}>
                     {renderInfo ? <>
-                        <div>{t('temperaturePage.rendering.dataPoints')}: {renderInfo.originLength}</div>
-                        <div>{t('temperaturePage.rendering.actualPoints')}: {renderInfo.renderPointsLength}</div>
-                        <div>{t('temperaturePage.rendering.sampleRate')}: {renderInfo.sampleRate}</div>
-                    </> : <EmptyState description="请点击确认渲染"/>}
+                        <div>{t('scalarNcFilePage.rendering.dataPoints')}: {renderInfo.originLength}</div>
+                        <div>{t('scalarNcFilePage.rendering.actualPoints')}: {renderInfo.renderPointsLength}</div>
+                        <div>{t('scalarNcFilePage.rendering.sampleRate')}: {renderInfo.sampleRate}</div>
+                    </> : <EmptyState description={t('scalarNcFilePage.messages.clickToRender')}/>}
                 </Card>
             </div>
 

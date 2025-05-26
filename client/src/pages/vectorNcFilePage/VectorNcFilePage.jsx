@@ -39,7 +39,7 @@ const NcFilePage = () => {
     const [imgList, setImageList] = useState([]);
 
     const [presetFiles, setPresetFiles] = useState([
-        {name: '风场nc数据', path: '/data/wind.json'},
+        {name: 'vectorNcFilePage.presetFiles.wind', path: '/data/wind.json'},
     ]);
     const [selectedPreset, setSelectedPreset] = useState(null);
 
@@ -51,7 +51,6 @@ const NcFilePage = () => {
     };
 
     const handleTextureGenerated = (data) => {
-        console.log('gogogo出发咯', data);
         const img = data.map(item => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -120,7 +119,7 @@ const NcFilePage = () => {
 
     const handleUpload = async () => {
         if (!file) {
-            messageApi.warning('请先选择文件');
+            messageApi.warning(t('vectorNcFilePage.messages.selectFileFirst'));
             return;
         }
 
@@ -134,14 +133,14 @@ const NcFilePage = () => {
             if (res.status !== "success") {
                 throw new Error(res.error)
             }
-            messageApi.success('上传成功');
+            messageApi.success(t('vectorNcFilePage.messages.uploadSuccess'));
             setVariables(res.data.header.variables || []);
             setFilePath(res.data.filePath);
             setHeader(res.data.header);
             form?.resetFields();
             setSelectedPreset(null);
         } catch (error) {
-            messageApi.error('数据处理失败, 请上传NetCDF v3.x文件', error);
+            messageApi.error(t('vectorNcFilePage.messages.uploadFailed'), error);
         } finally {
             setUploading(false);
         }
@@ -153,7 +152,7 @@ const NcFilePage = () => {
 
     const confirm = async (values) => {
         if (!viewer) {
-            messageApi.warning('cesium矢量地图未加载，请检查网络是否正常');
+            messageApi.warning(t('vectorNcFilePage.messages.cesiumNotLoaded'));
         }
         try {
             seConfirmLoading(true);
@@ -172,15 +171,12 @@ const NcFilePage = () => {
 
             clearRenderUnit();
 
-
-            setRenderInfo({...res.data.header})
-
             clearRenderUnit();
-            setRenderInfo({...res.data.header});
+            renderMode === 'windPole' && setRenderInfo({...res.data.header});
 
             renderUnit.current = renderMethods[renderMode](viewer, res.data.sampledData, res.data.header, updateLegendData);
 
-            messageApi.success('渲染成功');
+            messageApi.success(t('vectorNcFilePage.messages.renderSuccess'));
         } catch (error) {
             messageApi.error(error.message);
         } finally {
@@ -210,7 +206,7 @@ const NcFilePage = () => {
             {/* 左侧容器 */}
             <div className={styles.leftContainer}>
                 {/* 数据上传 */}
-                <Card title={t('temperaturePage.upload.title')} className={styles.card}>
+                <Card title={t('vectorNcFilePage.upload.title')} className={styles.card}>
                     {
                         <>
                             <div className={styles.flex}>
@@ -221,7 +217,7 @@ const NcFilePage = () => {
                                     accept=".nc"
                                     disabled={uploading}
                                 >
-                                    <Button>{t('temperaturePage.upload.selectFile')}</Button>
+                                    <Button>{t('vectorNcFilePage.upload.selectFile')}</Button>
                                 </Upload>
 
                                 {/* 预设文件下拉框 */}
@@ -233,7 +229,7 @@ const NcFilePage = () => {
                                 >
                                     {presetFiles.map((preset) => (
                                         <Option key={preset.name} value={preset.name}>
-                                            {preset.name}
+                                            {t(preset.name)}
                                         </Option>
                                     ))}
                                 </Select>
@@ -249,98 +245,98 @@ const NcFilePage = () => {
                             </div>
 
                             {/* 文件名 */}
-                            <p className={styles.fileName}>{t('temperaturePage.upload.selectedFile')}: {fileName}</p>
-                            {/* 上传文件 */}
-                            <Button
-                                type="primary"
-                                onClick={handleUpload}
-                                loading={uploading}
-                                className={styles.uploadButton}
-                                disabled={!file}
-                            >
-                                {t('temperaturePage.upload.uploadButton')}
-                            </Button>
-                            {/* 查看数据结构 */}
-                            <Button
-                                onClick={() => setIsStructureModalOpen(true)}
-                                className={styles.actionButton}
-                                disabled={!header}
-                            >
-                                {t('temperaturePage.actions.viewStructure')}
-                            </Button>
+                            <p className={styles.fileName}>{t('vectorNcFilePage.upload.selectedFile')}: {fileName}</p>
+                            <div className={styles.divButton}>
+                                {/* 上传文件 */}
+                                <Button
+                                    type="primary"
+                                    onClick={handleUpload}
+                                    loading={uploading}
+                                    disabled={!file}
+                                >
+                                    {t('vectorNcFilePage.upload.uploadButton')}
+                                </Button>
+                                {/* 查看数据结构 */}
+                                <Button
+                                    onClick={() => setIsStructureModalOpen(true)}
+                                    disabled={!header}
+                                >
+                                    {t('vectorNcFilePage.actions.viewStructure')}</Button>
 
-                            {/* 查看uv图 */}
-                            <Button
-                                onClick={() => setUvOpen(true)}
-                                className={styles.actionButton}
-                                disabled={!imgList.length}
-                            >
-                                查看uv图
-                            </Button>
+                                {/* 查看uv图 */}
+                                <Button
+                                    onClick={() => setUvOpen(true)}
+                                    disabled={!imgList.length}
+                                >
+                                    {t('vectorNcFilePage.renderMode.viewUV')}
+                                </Button>
+                            </div>
                         </>
                     }
                 </Card>
 
                 {/* 数据查询 */}
-                <Card title={t('temperaturePage.query.title')} className={styles.card}>
+                <Card title={t('vectorNcFilePage.query.title')} className={styles.card}>
                     {variables.length === 0 ? (
-                        <EmptyState description="请先上传数据文件"/>
+                        <EmptyState description={t('vectorNcFilePage.messages.uploadDataFirst')}/>
                     ) : (
                         <Form form={form} onFinish={confirm}>
-                            <Form.Item name="lon" label={t('temperaturePage.query.x')} rules={[{required: true}]}>
-                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                            <Form.Item name="lon" label={t('vectorNcFilePage.query.x')} rules={[{required: true}]}>
+                                <Select placeholder={t('vectorNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="lat" label={t('temperaturePage.query.y')} rules={[{required: true}]}>
-                                <Select placeholder={t('temperaturePage.query.selectPlaceholder')}>
+                            <Form.Item name="lat" label={t('vectorNcFilePage.query.y')} rules={[{required: true}]}>
+                                <Select placeholder={t('vectorNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="z" label={t('temperaturePage.query.z')}>
-                                <Select placeholder={'请选择高度'}>
+                            <Form.Item name="z" label={t('vectorNcFilePage.query.z')}>
+                                <Select placeholder={t('vectorNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="u" label={'u方向'} rules={[{required: true}]}>
-                                <Select placeholder={t('请输入u方向字段')}>
+                            <Form.Item name="u" label={t('vectorNcFilePage.query.u')} rules={[{required: true}]}>
+                                <Select placeholder={t('vectorNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="v" label={t('v方向')} rules={[{required: true}]}>
-                                <Select placeholder={t('请输入v方向字段')}>
+                            <Form.Item name="v" label={t('vectorNcFilePage.query.v')} rules={[{required: true}]}>
+                                <Select placeholder={t('vectorNcFilePage.query.selectPlaceholder')}>
                                     {variables.map(v => (
                                         <Option key={v.name} value={v.name}>{v.name}</Option>
                                     ))}
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item name="renderMode" label="渲染方式" initialValue="particleSystem">
+                            <Form.Item name="renderMode" label={t('vectorNcFilePage.renderMode.label')} initialValue="particleSystem">
                                 <Select>
-                                    <Option value="windPole">风杆图</Option>
-                                    <Option value="particleSystem">粒子系统</Option>
+                                    <Option value="windPole">{t('vectorNcFilePage.renderMode.windPole')}</Option>
+                                    <Option value="particleSystem">{t('vectorNcFilePage.renderMode.particleSystem')}</Option>
                                 </Select>
                             </Form.Item>
 
-                            <Button type="primary" htmlType="submit" loading={confirmLoading}
+                            <div className={styles.divButton}>
+                                <Button type="primary" htmlType="submit" loading={confirmLoading}
                                     className={styles.confirmButton}>
-                                确认
-                            </Button>
+                                    {t('vectorNcFilePage.query.submitButton')}
+                                </Button>
 
-                            <Button onClick={clearRenderUnit}
-                                    className={styles.actionButton}>{t('temperaturePage.actions.clearHeatmap')}</Button>
+                                <Button onClick={clearRenderUnit}
+                                    className={styles.actionButton}>{t('vectorNcFilePage.actions.clearHeatmap')}</Button>
+                            </div>
                         </Form>)}
 
                 </Card>
@@ -348,19 +344,14 @@ const NcFilePage = () => {
 
             {/* 右侧卡片组 */}
             <div className={styles.rightContainer}>
-                {/* 数据操作 */}
-                {/* <Card title={t('temperaturePage.actions.title')} className={styles.card}>
-          {!data.length > 0 ? <EmptyState description="请先上传数据文件" /> : <>
-          </>}
-        </Card> */}
 
                 {/* 渲染效率 */}
-                <Card title={t('temperaturePage.rendering.title')} className={styles.card}>
+                <Card title={t('vectorNcFilePage.rendering.title')} className={styles.card}>
                     {renderInfo ? <>
-                        <div>{t('temperaturePage.rendering.dataPoints')}: {renderInfo.originLength}</div>
-                        <div>{t('temperaturePage.rendering.actualPoints')}: {renderInfo.renderPointsLength}</div>
-                        <div>{t('temperaturePage.rendering.sampleRate')}: {renderInfo.sampleRate}</div>
-                    </> : <EmptyState description="请点击确认渲染"/>}
+                        <div>{t('vectorNcFilePage.rendering.dataPoints')}: {renderInfo.originLength}</div>
+                        <div>{t('vectorNcFilePage.rendering.actualPoints')}: {renderInfo.renderPointsLength}</div>
+                        <div>{t('vectorNcFilePage.rendering.sampleRate')}: {renderInfo.sampleRate}</div>
+                    </> : <EmptyState description={t('vectorNcFilePage.messages.clickToRender')}/>}
                 </Card>
             </div>
 
