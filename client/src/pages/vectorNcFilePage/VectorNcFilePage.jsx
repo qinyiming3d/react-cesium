@@ -61,8 +61,8 @@ const NcFilePage = () => {
                 for (let i = 0; i < item.array.length / 4; i++) {
                     const value = item.array[i];
                     // r通道x坐标（经度）  g通道y坐标（纬度）  b通道z坐标（高度） a通道为0
-                    imageData.data[i * 4] = value / 360; // R通道
-                    imageData.data[i * 4 + 1] = value + 90 / 180; // G通道
+                    imageData.data[i * 4] = (value / 360) * 255; // R通道
+                    imageData.data[i * 4 + 1] = (value + 90 / 180) * 255; // G通道
                     imageData.data[i * 4 + 2] = 0; // B通道
                     imageData.data[i * 4 + 3] = 255;                   // Alpha通道
                 }
@@ -130,7 +130,7 @@ const NcFilePage = () => {
                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                 setUploadProgress(percentCompleted);
             });
-            if (res.status !== "success") {
+            if (res.status !== "200") {
                 throw new Error(res.error)
             }
             messageApi.success(t('vectorNcFilePage.messages.uploadSuccess'));

@@ -46,7 +46,7 @@ export default function waterRender(viewer, data, header, updateLegendData) {
         geometry: new RectangleGeometry({
             ellipsoid: Ellipsoid.WGS84,
             rectangle: Rectangle.fromDegrees(-180, latRange[0], 180, latRange[1]),
-            vertexFormat: EllipsoidSurfaceAppearance.VERTEX_FORMAT
+            vertexFormat: EllipsoidSurfaceAppearance.VERTEX_FORMAT,
         }),
     });
 

@@ -48,7 +48,8 @@ export default function rectangleRender(viewer, data, header, updateLegendData) 
         geometry: new Cesium.RectangleGeometry({
             ellipsoid: Cesium.Ellipsoid.WGS84,
             rectangle: Cesium.Rectangle.fromDegrees(-180, latRange[0], 180, latRange[1]),
-            vertexFormat: Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+            vertexFormat: Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
+            // granularity: Cesium.Math.RADIANS_PER_DEGREE / 10, // 提高分辨率
         }),
     });
 

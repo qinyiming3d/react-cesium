@@ -26,13 +26,14 @@ const resources = {
           x: 'Longitude (x-coordinate)',
           y: 'Latitude (y-coordinate)',
           z: 'Z Variable (Time/Height)',
-          f: 'f(Longitude, Latitude, Z)',
+          u: 'u Direction',
+          v: 'v Direction',
           selectPlaceholder: 'Please select',
           submitButton: 'Query and Render'
         },
         actions: {
           title: 'Data Operations',
-          clearHeatmap: 'Clear Heatmap',
+          clearHeatmap: 'Clear map',
           viewStructure: 'View Data Structure'
         },
         rendering: {
@@ -78,7 +79,7 @@ const resources = {
         },
         actions: {
           title: 'Data Operations',
-          clearHeatmap: 'Clear Heatmap',
+          clearHeatmap: 'Clear map',
           viewStructure: 'View Data Structure'
         },
         rendering: {
@@ -106,7 +107,7 @@ const resources = {
           label: 'Render Mode',
           point: 'Point Render',
           column: 'Column Render',
-          shader: 'Shader Render',
+          shader: 'geometry Render',
           rectangleRender: 'Texture Render',
           waterRender: 'Water Surface Render',
           viewUV: 'View UV'
@@ -172,7 +173,7 @@ const resources = {
           label: '渲染方式',
           point: '点渲染',
           column: '柱渲染',
-          shader: 'shader渲染',
+          shader: '多面体渲染',
           rectangleRender: '纹理渲染',
           waterRender: '水面渲染',
           viewUV: '查看uv图'
@@ -191,7 +192,8 @@ const resources = {
           x: 'x位置(经度)',
           y: 'y位置(纬度)',
           z: 'z变量(时间/高度)',
-          f: 'f(x,y,z)',
+          u: 'u方向',
+          v: 'v方向',
           selectPlaceholder: '请选择',
           submitButton: '查询并渲染'
         },
@@ -220,7 +222,7 @@ const resources = {
         },
         renderMode: {
           label: '渲染方式',
-          windPole: '风杆渲染',
+          windPole: '点图标渲染',
           particleSystem: '粒子系统渲染',
           viewUV: '查看uv图'
         }

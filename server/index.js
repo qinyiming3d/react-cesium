@@ -98,7 +98,7 @@ app.get('/api/getScalarGridData', async (req, res) => {
         const renderPointsLength = sampledData.length;
 
         res.json({
-            status: 'success',
+            status: '200',
             data: {
                 header: {
                     min,

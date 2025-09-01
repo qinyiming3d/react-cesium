@@ -11,8 +11,8 @@ const float SEA_HEIGHT = 0.6; // 波浪高度
 const float SEA_CHOPPY = 10.0; // 尖锐度
 const float SEA_SPEED = 1.4; // 运动速度
 const float SEA_FREQ = 0.26; // 频率
-const vec3 SEA_BASE = vec3(0.05, 0.15, 0.25); // 海水基底色
-const vec3 SEA_WATER_COLOR = vec3(0.4, 0.6, 0.9); // 反光色
+const vec3 SEA_BASE = vec3(0.05, 0.15, 0.25); // 海水基底色  12.75 38.25 63.75
+const vec3 SEA_WATER_COLOR = vec3(0.4, 0.6, 0.9); // 反光色 102 153 229.5
 //#define SEA_TIME (1.0 + iTime * SEA_SPEED)
 const mat2 octave_m = mat2(1.6, 1.2, -1.2, 1.6);// 生成噪声或波浪形状时，通过矩阵变换改变噪声的频率和方向，从而增加细节和复杂性。
 // math 欧拉角转换为旋转矩阵，用于调整光线方向。

@@ -95,7 +95,7 @@ const ScalarNcFilePage = () => {
                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                 setUploadProgress(percentCompleted);
             });
-            if (res.status !== "success") {
+            if (res.status !== "200") {
                 throw new Error(res.error)
             }
             messageApi.success(t('scalarNcFilePage.messages.uploadSuccess'));

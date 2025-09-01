@@ -78,7 +78,7 @@ export const createColorTexture = ({
                                        maxValue,
                                        options = {
                                            colorScaleType: 'linear', // step 表示分段渐变，linear 表示线性渐变
-                                           step: 4, // 分段步长，可以是布尔值或数字
+                                           step: undefined, // 分段步长，可以是布尔值或数字
                                        },
                                    }) => {
     const length = colors.length - 1;

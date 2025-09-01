@@ -10,8 +10,7 @@ const {NetCDFReader} = require('netcdfjs');
 const parseNCFile = async (filePath) => {
     const data = readFileSync(filePath);
     const reader = new NetCDFReader(data);
-    // console.log(reader.variables);
-    // console.log(reader.dimensions);
+
 
     // 返回绝对路径，使用path.resolve确保跨平台兼容性
     return {
@@ -73,17 +72,23 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSam
     const yObject = indexMapping[index[1]];
     yObject.demension = '二维';
     const zObject = indexMapping[index[2]];
-    zObject.demension = '三维';
-
+    if(zObject) {
+        zObject.demension = '三维';
+    }
+    // const strids = {
+    //     '一维': yObject.data.length * zObject.data.length,
+    //     '二维': zObject.data.length,
+    //     '三维': 1
+    // };
     const strids = {
-        '一维': yObject.data.length * zObject.data.length,
-        '二维': zObject.data.length,
+        '一维': yObject.data.length * (zObject ? zObject.data.length : 1),
+        '二维': zObject ? zObject.data.length : 1,
         '三维': 1
     };
 
     const lonObject = [xObject, yObject, zObject].find(item => item.name === lonName);
     const latObject = [xObject, yObject, zObject].find(item => item.name === latName);
-    const heightObject = [xObject, yObject, zObject].find(item => item.name === zName);
+    // const heightObject = [xObject, yObject, zObject].find(item => item.name === zName);
 
 
     const originLength = lonObject.data.length * latObject.data.length;
@@ -96,6 +101,9 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSam
     const textureHeight = latObject.data.length / sampleRate;
 
     let resultArr = [];
+
+    // let textureWidth = lonObject.data.length / 25;
+    // let textureHeight = latObject.data.length / 25;
 
 
     // 默认显示高度为0层
@@ -113,8 +121,9 @@ function convertTo2DArray(lonName, latName, zName, f, index, indexMapping, isSam
     const lonDistance = sampledLons.length > 1 ? sampledLons[1] - sampledLons[0] : 0;
     const latDistance = sampledLats.length > 1 ? sampledLats[1] - sampledLats[0] : 0;
 
+    console.log(resultArr.length)
     resultArr = resultArr.filter(item => item[2]);
-
+    console.log(resultArr.length)
     // for (let k = 0; k < heightObject.data.length; k++) {
     //     for (let i = 0; i < lonObject.data.length; i++) {
     //         for (let j = 0; j < latObject.data.length; j++) {

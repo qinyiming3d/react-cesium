@@ -1,6 +1,6 @@
 import { request } from "@_public/apis/request";
 
-// 获取技能树名称
+
 export const getHeaderByNc = (file, onUploadProgress) => {
     const formData = new FormData();
     formData.append('file', file);

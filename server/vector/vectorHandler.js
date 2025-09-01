@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
   try {
     const result = await util.parseNCFile(req.file.path);
     res.json({
-      status: 'success',
+      status: '200',
       data: {
         header: result.header,
         filePath: result.filePath

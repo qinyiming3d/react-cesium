@@ -46,7 +46,7 @@ const handleWindPole = (filePath, params, res) => {
     // [3, 2, 1]
     const u = reader.getDataVariable(params.u).flat();
     const v = reader.getDataVariable(params.v).flat();
-    const {resultArr: sampledData, dataInfo} = convertTo2DArray(params.lon, params.lat, params.z, u, v, indexOrder, indexMapping, params.isSample);
+    const {resultArr: sampledData, dataInfo} = convertTo2DArray(params.lon, params.lat, u, v, indexOrder, indexMapping, params.isSample);
 
     const uArray = sampledData.map(item => item[2]);
     const vArray = sampledData.map(item => item[3]);
@@ -59,7 +59,7 @@ const handleWindPole = (filePath, params, res) => {
     const renderPointsLength = sampledData.length;
 
     res.json({
-        status: 'success',
+        status: '200',
         data: {
             header: {
                 uMin,
@@ -141,7 +141,7 @@ const handleParticleSystem = (filePath, params, res) => {
         }
     }
     res.json({
-        status: 'success',
+        status: '200',
         data: {
             sampledData: {
                 U,
@@ -155,52 +155,43 @@ const handleParticleSystem = (filePath, params, res) => {
     })
 }
 
-function convertTo2DArray(lonName, latName, zName, u, v, index, indexMapping, isSample) {
-    console.log(indexMapping)
+/**
+ * 将一维或多维数据转换为二维数组，同时计算相关的采样信息。
+ * @param {string} lonName - 经度变量名称。 "lon"
+ * @param {string} latName - 纬度变量名称。  "lat"
+ * @param {Array} u - u 分量数据数组。 [1, 2, 3, ...]
+ * @param {Array} v - v 分量数据数组。 [4, 5, 6, ...]
+ * @param {Array} index - 数据维度索引数组。 例如 [3, 2, 1, 4] 表示 u 和 v 分量的维度顺序。
+ * @param {Object} indexMapping - 维度索引与变量数据的映射关系。 ['0': {name: 'lon', data: [1,2,3]}, '1': {name: 'lon', data: [1,2,3]},...]
+ * @param {boolean} isSample - 是否进行数据采样。 true 或 false。
+ * @returns {Object} 包含二维数组结果和采样信息的对象。
+ */
+function convertTo2DArray(lonName, latName, u, v, index, indexMapping, isSample) {
     const xObject = indexMapping[index[0]];
     xObject.demension = '一维';
     const yObject = indexMapping[index[1]];
     yObject.demension = '二维';
     const zObject = indexMapping[index[2]];
     zObject.demension = '三维';
-
     let wObject;
     if(Object.keys(indexMapping).length === 4) {
         wObject = indexMapping[index[3]];
         wObject.demension = '四维';
     }
-
-    // const strids = {
-    //     '一维': yObject.data.length * zObject.data.length,
-    //     '二维': zObject.data.length,
-    //     '三维': 1
-    // };
-
     const strids = {
         '一维': yObject.data.length * zObject.data.length * (wObject?.data.length || 1),
         '二维': zObject.data.length * (wObject?.data.length || 1),
         '三维': wObject?.data.length || 1,
         '四维': 1
     };
-
     const lonObject = [xObject, yObject, zObject, wObject].find(item => item.name === lonName);
     const latObject = [xObject, yObject, zObject, wObject].find(item => item.name === latName);
-    const heightObject = [xObject, yObject, zObject, wObject].find(item => item.name === zName);
-
-
     const originLength = lonObject.data.length * latObject.data.length;
     const sampleRate = isSample ? Math.max(1, Math.floor(originLength / 50000)) : 1; // 采样率
-    // const lonDistance = lonObject.data[1] - lonObject.data[0];
-    // const latDistance = latObject.data[1] - latObject.data[0];
     const latRange = [Math.min(...latObject.data), Math.max(...latObject.data)];
-
     const textureWidth = lonObject.data.length / sampleRate;
     const textureHeight = latObject.data.length / sampleRate;
-
     let resultArr = [];
-
-
-    // 默认显示高度为0层
     for (let i = 0; i < lonObject.data.length; i += sampleRate) {
         for (let j = 0; j < latObject.data.length; j += sampleRate) {
             const lon = lonObject.data[i];
@@ -213,20 +204,7 @@ function convertTo2DArray(lonName, latName, zName, u, v, index, indexMapping, is
     const sampledLats = [...new Set(resultArr.map(item => item[1]))].sort((a, b) => a - b);
     const lonDistance = sampledLons.length > 1 ? sampledLons[1] - sampledLons[0] : 0;
     const latDistance = sampledLats.length > 1 ? sampledLats[1] - sampledLats[0] : 0;
-
     resultArr = resultArr.filter(item => item[2] && item[3]);
-
-    // for (let k = 0; k < heightObject.data.length; k++) {
-    //     for (let i = 0; i < lonObject.data.length; i++) {
-    //         for (let j = 0; j < latObject.data.length; j++) {
-    //             const lon = lonObject.data[i];
-    //             const lat = latObject.data[j];
-    //             const height = heightObject.data[k];
-    //             const fIndex = i * strids[lonObject.demension] + j * strids[latObject.demension] + k * strids[heightObject.demension];
-    //             resultArr.push([lon, lat, height, f[fIndex]]);
-    //         }
-    //     }
-    // }
     return {resultArr, dataInfo: {lonDistance, latDistance, sampleRate, originLength, textureWidth, textureHeight, latRange}};
 }
 
